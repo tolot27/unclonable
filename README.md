@@ -1,4 +1,3 @@
-unclonable
-==========
+# Unclonable regions in *C. burnetii*
 
-Unclonable regions in C. burnetii
+Used to track sources of this project.
