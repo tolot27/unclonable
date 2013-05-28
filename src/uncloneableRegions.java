@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -36,6 +37,9 @@ public class uncloneableRegions {
 	static HashMap<String,int[]> globalStartStop;
 	static List meanInsertSize = new LinkedList();
 	static HashMap<String,int[]> Ringschluss;
+	static int [] libs;
+	static double[] meanCov;
+	static int counterError;
 	
 	
 
@@ -60,8 +64,9 @@ public class uncloneableRegions {
 				}
 			else {FileWriter Ausgabe_größer2Lib2 = new FileWriter(
 					  "Contig"+contig+"_!!!!Errors!!!!.txt",true);
-				      Ausgabe_größer2Lib2.append(key+" "+startStop.get(key)[0]+" "+startStop.get(key)[1]+"\n");
-				      Ausgabe_größer2Lib2.close(); }
+				      Ausgabe_größer2Lib2.append("invalid-position-Error: "+key+" "+startStop.get(key)[0]+" "+startStop.get(key)[1]+"\n");
+				      Ausgabe_größer2Lib2.close(); 
+				      counterError++;}
 			}
 			
 		return coverage;
@@ -188,6 +193,8 @@ public class uncloneableRegions {
 						int aus1 = (Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]));
 						int aus2 = ((laengeSequenz-Integer.parseInt(ti0[3]))+Integer.parseInt(ti1[2]));
 						Ausgabe_größer2Lib.write("Maxlaenge-Error: "+ key + "\t" + TiTineu.get(key) +"\t"+aus1+"\t"+aus2+"\n");
+					
+						counterError++;
 					}
 					
 				   }
@@ -195,7 +202,8 @@ public class uncloneableRegions {
 					else{  	int aus1 = (Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]));
 					        int aus2 = ((laengeSequenz-Integer.parseInt(ti0[3]))+Integer.parseInt(ti1[2]));
 					        Ausgabe_größer2Lib.write("Beide-F-Error: "+key + "\t" + TiTineu.get(key) +"\t"+aus1+"\t"+aus2+"\n"); 
-					       }		
+					        counterError++;       
+					}		
 				}
 				else{
 				
@@ -206,7 +214,8 @@ public class uncloneableRegions {
 					if(matR.find()){ 	int aus1 = (Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]));
 									 	int aus2 = ((laengeSequenz-Integer.parseInt(ti0[3]))+Integer.parseInt(ti1[2]));
 									 	Ausgabe_größer2Lib.write("Beide-R-Error:"+key + "\t" + TiTineu.get(key) +"\t"+aus1+"\t"+aus2+"\n");          
-									}
+									 	counterError++;				
+					}
 					
 					else {
 					
@@ -222,6 +231,7 @@ public class uncloneableRegions {
 						int aus1 = (Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]));
 						int aus2 = ((laengeSequenz-Integer.parseInt(ti1[3]))+Integer.parseInt(ti0[2]));
 						Ausgabe_größer2Lib.write("Maxlaenge-Error: "+key + "\t" + tis[1]+"!"+tis[0] +"\t"+aus1+"\t"+aus2+"\n");
+						counterError++;
 					}}
 				}
 				
@@ -1462,26 +1472,37 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		
 		
-		public static void statistik() throws IOException{
+		public static void statistik(long start_time) throws IOException{
 			
 			   BufferedWriter Ausgabe_Statistik = new BufferedWriter(new FileWriter(new File(
 					   "Statistik_"+Organismus_name+".txt")));
-			   Ausgabe_Statistik.write("Organismus:"+Organismus_name+"\n");
-			   Ausgabe_Statistik.write("Anzahl der Contigs:"+AnzahlContigs+"\n");
+			   
+			   String mydate = java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
+			   
+			   Ausgabe_Statistik.write(mydate);
+			   Ausgabe_Statistik.write("\nLaufzeit: "+(System.currentTimeMillis()-start_time)/60000+" Minuten\n");
+			   Ausgabe_Statistik.write("Organismus: "+Organismus_name+"\n");
+			   Ausgabe_Statistik.write("Anzahl der Contigs: "+AnzahlContigs+"\n");
 			   
 			   
-			   Ausgabe_Statistik.write("Verwendete Librarys: ");
-			   for(Object key : librarySize.keySet()){
+			   Ausgabe_Statistik.write("Verwendete Librarys: \n");
+			   for(int g=0; g<2; g++){
 				   
-				   Ausgabe_Statistik.write(key+" "+librarySize.get(key)+"\n");
+				   Ausgabe_Statistik.write("Library "+libs[g]+" mit stdv "+librarySize.get(libs[g])+"\n");
 				   
 				   
 			   }
 			   Ausgabe_Statistik.write("\n\nMit valid-Templates berechnete mean-insert-sizes:\n\n");
+			  
+			   
+			   for(int j=1; j<=AnzahlContigs; j++){
+				   Ausgabe_Statistik.write("Contig "+j+": \n");
 			   for(int i=0; i<meanInsertSize.size(); i++){
-				   Ausgabe_Statistik.write(meanInsertSize.get(i)+" ");
+				   
+				   Ausgabe_Statistik.write("Library"+libs[i%2]+" "+meanInsertSize.get(i)+" \n");
 			   }
 			   
+			   }
 			   
 			   int AnzahlEinzelReads=0;
 			   for(int i=0; i<Speicher_1_Ti.size();i++){
@@ -1506,8 +1527,14 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   Ausgabe_Statistik.write("\n\nAnzahl der einzel-Reads: "+AnzahlEinzelReads+"\n");
 			   Ausgabe_Statistik.write("Anzahl der mehrfach-Templates: "+AnzahlMehrfachTemplates+"\n");
 			   Ausgabe_Statistik.write("Anzahl der valid-Templates: "+AnzahlValidTemplates);
+			   Ausgabe_Statistik.write("Anzahl der fehlerhaften mate-Templates: "+counterError);
 			   
-			   
+			   Ausgabe_Statistik.write("\n\nMean Template Coverage: \n");
+			  for(int i=1; i<=meanCov.length; i++){
+				  
+				  Ausgabe_Statistik.write("Contig"+i+": "+meanCov[i-1]+"\n");
+				  
+			  }
 			   
 			   Ausgabe_Statistik.write("\n\n\nEinzel-Reads:"+"\n\n");
 
@@ -1589,29 +1616,91 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		
 		
+		public static double  meanCoverage(){
+			int summe=0;
+			for(int i=0; i<compCov.length; i++){
+				summe+=compCov[i];
+			}
+			
+			double durchschnitt=summe/compCov.length;
+			return durchschnitt;
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	
 	//ntige Eingabeparameter: Args[0]=ASSEMBLY.xml , Args[1]=TraceInfo.xml
 	// die INSD-Datei muss als "INSD_contig1.xml vorliegen (wobei die 1 das entsprechende Contig ist)
 	public static void main(String[] args) throws JDOMException, IOException {
 
+		TraceInfo traceInfo = new TraceInfo("data/TRACEINFO.xml");
+		traceInfo.read();
+		
+		
+		long start_time = System.currentTimeMillis();
 		//Args[0]=ASSEMBLY.xml , Args[1]=TraceInfo.xml
 		auslesenAnzahl(args[1],args[0]);
+		meanCov = new double[AnzahlContigs];
+		System.out.format("Time to read ASSEMBLY.xml and TRACEINFO.xml: %d ms\n", (System.currentTimeMillis() - start_time));
+		
 	
+		
+		int Library1 = 0;
+		int Library2=0;
+		int flag=0;
+		for (Object key : librarySize.keySet()){
+			
+				if(flag==0){
+					Library1=Integer.parseInt(key.toString());
+				}
+				if(flag==1){
+					Library2=Integer.parseInt(key.toString());
+				}
+			flag++;
+			
+		}
+		
+		libs = new int[2];
+		if(Library1>Library2){
+			libs[0]=Library2;
+			libs[1]=Library1;
+		}
+		else{
+			libs[0]=Library1;
+			libs[1]=Library2;
+		}
+		
+		
+		
+		
 		
 		//Fr jedes Contig, fr jede library/insert-Size 
 		for(int i=1;i<=AnzahlContigs;i++){
 			
+
 			lesenVonINSD("data/INSD_contig"+i+".xml");
 			
 			compCov= new int[contig_laenge+1];
 			globalStartStop = new HashMap<String,int[]>();
 			Ringschluss = new HashMap<String,int[]>();
 			
-			for (Object key : librarySize.keySet()){
+			
+			
+			
+			
+			for (int l=0;l<2;l++){
+				
+				
 				
 				// (1) Erzeugen von HashMap zu Contig + librarySize (z.B. template_id -> ti$ti)
 				HashMap TiTi = new HashMap();
-			TiTi= lesenVonTrace(args[1],Integer.parseInt(key.toString()));
+			TiTi= lesenVonTrace(args[1],libs[l]);
 			
 				
 				// (2) Erzeugen von HashMap, die jedem read tiling-direction,  traceconsensus start und stop-Position zuordnet
@@ -1626,7 +1715,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				//Aufteilen nach Anzahl der Partner und ordnen nach F und R der zusammengehrigen Tis
 				//nur "legale" zweier-Paare werden weiter verwendet, einzelne und mehrfache Ti-Partner werden extern gespeichert
 				HashMap ZweierTiTi_FRStartStop = new HashMap();
-			ZweierTiTi_FRStartStop = startEnd(TiTi, TiFRStartStop, Integer.parseInt(key.toString()), Integer.parseInt(librarySize.get(key).toString()), i);
+			ZweierTiTi_FRStartStop = startEnd(TiTi, TiFRStartStop, libs[l], Integer.parseInt(librarySize.get(libs[l]+"").toString()), i);
 			
 				
 				
@@ -1732,9 +1821,12 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				ausgeben("DecreasedProt",Integer.toString(i), ausgabeDecreasedCoverageProt );
 				ausgeben("DecreasedRegions", Integer.toString(i), ausgabeDecreasedCoverageRegions);
 				
+				meanCov[i-1]=meanCoverage();
+				
+				
 				
 		}
-		 statistik();			
+		 statistik(start_time);			
 	}
 
 }
