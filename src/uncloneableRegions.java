@@ -38,6 +38,7 @@ public class uncloneableRegions {
 	static List meanInsertSize = new LinkedList();
 	static HashMap<String,int[]> Ringschluss;
 	static int [] libs;
+	static String[] string_libs;
 	static double[] meanCov;
 	static int counterError;
 	
@@ -75,7 +76,7 @@ public class uncloneableRegions {
 	
 	
 	// nur zweier Paare werden returned, alle paare werden global in Listen gespeichert
-	public static HashMap startEnd(HashMap TiTi, HashMap TiFRStartStop, int librarySize,int stdev, int contig) throws IOException {
+	public static HashMap startEnd(HashMap TiTi, HashMap TiFRStartStop, int librarySize,int stdev, int contig, int contig_size) throws IOException {
 
 		alleStartStopF = new HashMap<String,int[]>();
 		alleStartStopR = new HashMap<String,int[]>();
@@ -130,8 +131,8 @@ public class uncloneableRegions {
 		
 	
 		//<<<<<<<<<<<<<<<<<<<<<<<<
-		BufferedWriter Ausgabe_größer2Lib = new BufferedWriter(new FileWriter(new File(
-				  "Contig"+contig+"_!!!!Errors!!!!.txt")));
+		FileWriter Ausgabe_größer2Lib = new FileWriter(
+				  "Contig"+contig+"_!!!!Errors!!!!.txt",true);
 	   	
 	   
 			
@@ -169,6 +170,15 @@ public class uncloneableRegions {
 				Pattern patR = Pattern.compile("R");
 				Matcher matR = patR.matcher(tis[1]);
 				
+				
+				String[] TI1= tis[0].split("\\$");
+				String[] TI2 = tis[1].split("\\$");
+				
+				if( Integer.parseInt(TI1[2])>=0 && Integer.parseInt(TI1[3])>=0 && Integer.parseInt(TI2[2])>=0 && Integer.parseInt(TI2[3])>=0 
+						&& Integer.parseInt(TI1[2])<=contig_size && Integer.parseInt(TI1[3])<=contig_size && Integer.parseInt(TI2[2])<=contig_size && Integer.parseInt(TI2[3])<=contig_size){
+				
+				
+				
 				//es werden nur zweierPaare verwendet, die einen Abstand von kleiner als 2*librarySize besitzen, jedoch nicht negativ.
 				// Dies wre der Fall, wenn Reverse < Forward 
 				// Au§erdem wird ein zirkulrer Ringschluss betrachtet. Es wird also geschaut ob die Lnge ber die Grenzen hinaus kleiner als 2*librarySize ist
@@ -192,7 +202,7 @@ public class uncloneableRegions {
 					else{
 						int aus1 = (Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]));
 						int aus2 = ((laengeSequenz-Integer.parseInt(ti0[3]))+Integer.parseInt(ti1[2]));
-						Ausgabe_größer2Lib.write("Maxlaenge-Error: "+ key + "\t" + TiTineu.get(key) +"\t"+aus1+"\t"+aus2+"\n");
+						Ausgabe_größer2Lib.append("Maxlaenge-Error: "+ key + "\t" + TiTineu.get(key) +"\t"+aus1+"\t"+aus2+"\n");
 					
 						counterError++;
 					}
@@ -201,7 +211,7 @@ public class uncloneableRegions {
 					// Wenn 123123122$F$1$2!123123123$F$5$6
 					else{  	int aus1 = (Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]));
 					        int aus2 = ((laengeSequenz-Integer.parseInt(ti0[3]))+Integer.parseInt(ti1[2]));
-					        Ausgabe_größer2Lib.write("Beide-F-Error: "+key + "\t" + TiTineu.get(key) +"\t"+aus1+"\t"+aus2+"\n"); 
+					        Ausgabe_größer2Lib.append("Beide-F-Error: "+key + "\t" + TiTineu.get(key) +"\t"+aus1+"\t"+aus2+"\n"); 
 					        counterError++;       
 					}		
 				}
@@ -213,7 +223,7 @@ public class uncloneableRegions {
 					// Wenn 123123122$R$1$2!123123123$R$5$6
 					if(matR.find()){ 	int aus1 = (Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]));
 									 	int aus2 = ((laengeSequenz-Integer.parseInt(ti0[3]))+Integer.parseInt(ti1[2]));
-									 	Ausgabe_größer2Lib.write("Beide-R-Error:"+key + "\t" + TiTineu.get(key) +"\t"+aus1+"\t"+aus2+"\n");          
+									 	Ausgabe_größer2Lib.append("Beide-R-Error:"+key + "\t" + TiTineu.get(key) +"\t"+aus1+"\t"+aus2+"\n");          
 									 	counterError++;				
 					}
 					
@@ -230,13 +240,17 @@ public class uncloneableRegions {
 						
 						int aus1 = (Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]));
 						int aus2 = ((laengeSequenz-Integer.parseInt(ti1[3]))+Integer.parseInt(ti0[2]));
-						Ausgabe_größer2Lib.write("Maxlaenge-Error: "+key + "\t" + tis[1]+"!"+tis[0] +"\t"+aus1+"\t"+aus2+"\n");
+						Ausgabe_größer2Lib.append("Maxlaenge-Error: "+key + "\t" + tis[1]+"!"+tis[0] +"\t"+aus1+"\t"+aus2+"\n");
 						counterError++;
 					}}
 				}
 				
 			}
-
+				else{
+					Ausgabe_größer2Lib.append("pos-Error: "+key + "\t" + tis[1]+"!"+tis[0] +"\n");
+					counterError++;
+				}
+			}
 			// wenn nur 1 Ti wird 2x extra abgespeichert
 
 			else {
@@ -341,7 +355,7 @@ public class uncloneableRegions {
 	
 	//erstellt aus einem zweier Paar TiFRStartStop eine HashMap mit Start und Stop-Position
 	//des Templates, dabei wird der Kreisschluss beachtet
-	public static HashMap StartStop (HashMap map, int contig_size){
+	public static HashMap StartStop (HashMap map, int contig_size, int contig){
 			
 		HashMap<String,int[]> StartStop = new HashMap<String,int[]>();
 		
@@ -357,6 +371,10 @@ public class uncloneableRegions {
 
 			mate1 = Tis[0].split("\\$");
 			mate2 = Tis[1].split("\\$");
+			
+			
+			
+			
 			
 			//ist die Position des Forward-Read kleiner als die des Reverse-Reads, dann wird die Start
 			// und Stop-Position ohne Vernderung in den Hash gespeichert
@@ -399,6 +417,7 @@ public class uncloneableRegions {
 			}
 	
 		}
+			
 		
 		return StartStop;
 		
@@ -1488,20 +1507,21 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   Ausgabe_Statistik.write("Verwendete Librarys: \n");
 			   for(int g=0; g<2; g++){
 				   
-				   Ausgabe_Statistik.write("Library "+libs[g]+" mit stdv "+librarySize.get(libs[g])+"\n");
+				   Ausgabe_Statistik.write("Library "+libs[g]+" mit stdv "+librarySize.get(string_libs[g])+"\n");
 				   
 				   
 			   }
 			   Ausgabe_Statistik.write("\n\nMit valid-Templates berechnete mean-insert-sizes:\n\n");
 			  
-			   
+			   int zaehler=0;
 			   for(int j=1; j<=AnzahlContigs; j++){
-				   Ausgabe_Statistik.write("Contig "+j+": \n");
-			   for(int i=0; i<meanInsertSize.size(); i++){
 				   
-				   Ausgabe_Statistik.write("Library"+libs[i%2]+" "+meanInsertSize.get(i)+" \n");
+				   Ausgabe_Statistik.write("Contig "+j+": \n");
+			   for(int i=zaehler; i<=zaehler+1; i++){
+				   
+				   Ausgabe_Statistik.write("Library"+libs[i%2]+": "+meanInsertSize.get(i)+" \n");
 			   }
-			   
+			   zaehler+=2;
 			   }
 			   
 			   int AnzahlEinzelReads=0;
@@ -1526,7 +1546,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   
 			   Ausgabe_Statistik.write("\n\nAnzahl der einzel-Reads: "+AnzahlEinzelReads+"\n");
 			   Ausgabe_Statistik.write("Anzahl der mehrfach-Templates: "+AnzahlMehrfachTemplates+"\n");
-			   Ausgabe_Statistik.write("Anzahl der valid-Templates: "+AnzahlValidTemplates);
+			   Ausgabe_Statistik.write("Anzahl der valid-Templates: "+AnzahlValidTemplates+"\n");
 			   Ausgabe_Statistik.write("Anzahl der fehlerhaften mate-Templates: "+counterError);
 			   
 			   Ausgabe_Statistik.write("\n\nMean Template Coverage: \n");
@@ -1548,7 +1568,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   		}
 			   	
 			   		
-			  	Ausgabe_Statistik.write("\n\n\nMehrfach-Templates):"+"\n\n");
+			  	Ausgabe_Statistik.write("\n\n\nMehrfach-Templates:"+"\n\n");
 			   	//Mehrfach Reads werden Rausgeschrieben
 			   		for(int i=0; i<Speicher_mehrere_Ti.size();i++){
 			   		 for(Object key : Speicher_mehrere_Ti.get(i).keySet()){
@@ -1561,7 +1581,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   			}}
 			   		}
 			
-			   		Ausgabe_Statistik.write("\n\n\nValid-Templates):"+"\n\n");
+			   		Ausgabe_Statistik.write("\n\n\nValid-Templates:"+"\n\n");
 				   	//verwendete Reads werden Rausgeschrieben
 				   		for(int i=0; i<Speicher_2_Ti.size();i++){
 				   		 for(Object key : Speicher_2_Ti.get(i).keySet()){
@@ -1639,13 +1659,19 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 	// die INSD-Datei muss als "INSD_contig1.xml vorliegen (wobei die 1 das entsprechende Contig ist)
 	public static void main(String[] args) throws JDOMException, IOException {
 
-		TraceInfo traceInfo = new TraceInfo("data/TRACEINFO.xml");
-		traceInfo.read();
+		//TraceInfo traceInfo = new TraceInfo("data/TRACEINFO.xml");
+		//traceInfo.read();
 		
 		
 		long start_time = System.currentTimeMillis();
 		//Args[0]=ASSEMBLY.xml , Args[1]=TraceInfo.xml
-		auslesenAnzahl(args[1],args[0]);
+		TraceInfo traceInfo = new TraceInfo();
+		traceInfo.auslesenAnzahl(args[1],args[0]);
+		librarySize = traceInfo.getLibrarySize();
+		AnzahlContigs=traceInfo.getAnzahlContigs();
+		Organismus_name=traceInfo.getOrganismus_name();
+		
+		
 		meanCov = new double[AnzahlContigs];
 		System.out.format("Time to read ASSEMBLY.xml and TRACEINFO.xml: %d ms\n", (System.currentTimeMillis() - start_time));
 		
@@ -1653,27 +1679,36 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		int Library1 = 0;
 		int Library2=0;
+		String string_Library1="";
+		String string_Library2="";
 		int flag=0;
 		for (Object key : librarySize.keySet()){
 			
 				if(flag==0){
 					Library1=Integer.parseInt(key.toString());
+					string_Library1=key.toString();
 				}
 				if(flag==1){
 					Library2=Integer.parseInt(key.toString());
+					string_Library2=key.toString();
 				}
 			flag++;
 			
 		}
 		
 		libs = new int[2];
+		string_libs = new String[2];
 		if(Library1>Library2){
 			libs[0]=Library2;
 			libs[1]=Library1;
+			string_libs[0]=string_Library2;
+			string_libs[1]=string_Library1;
 		}
 		else{
 			libs[0]=Library1;
 			libs[1]=Library2;
+			string_libs[1]=string_Library2;
+			string_libs[0]=string_Library1;
 		}
 		
 		
@@ -1690,7 +1725,9 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			globalStartStop = new HashMap<String,int[]>();
 			Ringschluss = new HashMap<String,int[]>();
 			
-			
+			BufferedWriter Ausgabe_größer2Lib = new BufferedWriter(new FileWriter(new File(
+					  "Contig"+i+"_!!!!Errors!!!!.txt")));
+			Ausgabe_größer2Lib.close();
 			
 			
 			
@@ -1715,7 +1752,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				//Aufteilen nach Anzahl der Partner und ordnen nach F und R der zusammengehrigen Tis
 				//nur "legale" zweier-Paare werden weiter verwendet, einzelne und mehrfache Ti-Partner werden extern gespeichert
 				HashMap ZweierTiTi_FRStartStop = new HashMap();
-			ZweierTiTi_FRStartStop = startEnd(TiTi, TiFRStartStop, libs[l], Integer.parseInt(librarySize.get(libs[l]+"").toString()), i);
+			ZweierTiTi_FRStartStop = startEnd(TiTi, TiFRStartStop, libs[l], Integer.parseInt(librarySize.get(string_libs[l]).toString()), i, laengeSequenz);
 			
 				
 				
@@ -1729,7 +1766,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				
 				//umschreiben in nur Start und Stop- Positionen
 				HashMap startStop = new HashMap();
-				startStop = StartStop(ZweierTiTi_FRStartStop, laengeSequenz);
+				startStop = StartStop(ZweierTiTi_FRStartStop, laengeSequenz, i);
 				
 			//*	int[] PotGenPosition = Window(startStop, laengeSequenz, Integer.parseInt(key.toString()));
 				
