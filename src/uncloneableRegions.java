@@ -1336,7 +1336,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 									if(globalStartStop.get(key)[0] >= 0 && globalStartStop.get(key)[1]>=0 && globalStartStop.get(key)[0]<=contig_laenge && globalStartStop.get(key)[1]<=contig_laenge){
 									if(globalStartStop.get(key)[0] <= Integer.parseInt(CDS.get(k)[1]) && globalStartStop.get(key)[1] >= (Integer.parseInt(CDS.get(k)[2]))){
 										flag++;
-										if(flag>2){
+										if(flag>8){ //******************************** 2
 											break;
 										}
 									
@@ -1354,12 +1354,25 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 										
 									}
 								}
-								if(flag==1 || flag ==2){
+								if(flag==1 || flag ==2 || flag ==3 || flag ==4 || flag ==5  || flag ==6 || flag ==7 || flag ==8){ //*********************************** 
 									for(int j = Integer.parseInt(CDS.get(k)[1]);j <= Integer.parseInt(CDS.get(k)[2]); j++){
 										if (flag==1){
 										decreasedCoverageProt[j]=1;}
 										if (flag==2){
 											decreasedCoverageProt[j]=2;}
+										//***************************************
+										if (flag==3){
+											decreasedCoverageProt[j]=3;}
+										if (flag==4){
+											decreasedCoverageProt[j]=4;}
+										if (flag==5){
+											decreasedCoverageProt[j]=5;}
+										if (flag==6){
+											decreasedCoverageProt[j]=6;}
+										if (flag==7){
+											decreasedCoverageProt[j]=7;}
+										if (flag==8){
+											decreasedCoverageProt[j]=8;}
 										
 										
 									}
@@ -1389,7 +1402,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 								if(globalStartStop.get(key)[0] >= 0 && globalStartStop.get(key)[1]>=0 && globalStartStop.get(key)[0]<=contig_laenge && globalStartStop.get(key)[1]<=contig_laenge){
 								if(globalStartStop.get(key)[0] <= Integer.parseInt(CDS.get(k)[2]) && globalStartStop.get(key)[1] >= (Integer.parseInt(CDS.get(k)[1]))){
 									flag++;
-									if(flag>2){
+									if(flag>8){ //******************* 2
 										break;
 									}
 								
@@ -1407,12 +1420,27 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 									
 								}
 							}
-							if(flag==1 || flag ==2){
-								for(int j = Integer.parseInt(CDS.get(k)[1]);j <= Integer.parseInt(CDS.get(k)[2]); j++){
+							if(flag==1 || flag ==2  || flag ==3 || flag ==4 || flag ==5 || flag ==6 || flag ==7 || flag ==8){
+								for(int j = Integer.parseInt(CDS.get(k)[2]);j <= Integer.parseInt(CDS.get(k)[1]); j++){
 									if (flag==1){
 										decreasedCoverageProt[j]=1;}
 										if (flag==2){
 											decreasedCoverageProt[j]=2;}
+										
+										//***************
+										if (flag==3){
+											decreasedCoverageProt[j]=3;}
+										if (flag==4){
+											decreasedCoverageProt[j]=4;}
+										if (flag==5){
+											decreasedCoverageProt[j]=5;}
+										if (flag==6){
+											decreasedCoverageProt[j]=6;}
+										if (flag==7){
+											decreasedCoverageProt[j]=7;}
+										if (flag==8){
+											decreasedCoverageProt[j]=8;}
+												
 									
 									
 								}
@@ -1434,7 +1462,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 							if(globalStartStop.get(key)[0] >= 0 && globalStartStop.get(key)[1]>=0 && globalStartStop.get(key)[0]<=contig_laenge && globalStartStop.get(key)[1]<=contig_laenge){
 							if(globalStartStop.get(key)[0] <= (i-10) && globalStartStop.get(key)[1] >= (i+10)){
 								flag++;
-								if(flag>2){
+								if(flag>2){ 
 									break;
 								}
 							
@@ -1648,7 +1676,20 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		
 		
-		
+		public static void ausgebenAlleProteine(int contig) throws IOException{
+			
+			BufferedWriter AusgabeAlleProt = new BufferedWriter(new FileWriter(new File(
+					  contig+"AlleProt.txt")));
+			
+			
+				for (String[] e : CDS) {
+					
+			   AusgabeAlleProt.write(e[0]+"\t"+e[0]+"\t"+e[1]+"\t"+e[2]+"\t"+e[3]+"\t"+e[4]+"\t"+e[5]+"\t"+e[6]+"\t"+e[7]+"\t"+e[8]+"\n");
+								
+								   					}
+					AusgabeAlleProt.close();
+			
+		}
 		
 		
 		
@@ -1720,6 +1761,8 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			
 
 			lesenVonINSD("data/INSD_contig"+i+".xml");
+			ausgebenAlleProteine(i);
+			
 			
 			compCov= new int[contig_laenge+1];
 			globalStartStop = new HashMap<String,int[]>();
@@ -1774,7 +1817,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				
 				int[] completeCoverage = gesamtCoverage(startStop, laengeSequenz,i);
 				
-			//*	ausgebenGene(Integer.toString(i), PotGenPosition, key.toString());
+				//*ausgebenGene(Integer.toString(i), PotGenPosition, key.toString());
 			//*	ausgebenUncloneableGene(Integer.toString(i), PotGenPosition, key.toString() );
 			
 				
