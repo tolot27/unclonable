@@ -1700,8 +1700,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 	// die INSD-Datei muss als "INSD_contig1.xml vorliegen (wobei die 1 das entsprechende Contig ist)
 	public static void main(String[] args) throws JDOMException, IOException {
 
-		//TraceInfo traceInfo = new TraceInfo("data/TRACEINFO.xml");
-		//traceInfo.read();
+
 		
 		
 		long start_time = System.currentTimeMillis();
