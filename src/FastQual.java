@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -15,23 +17,25 @@ import org.jdom2.input.SAXBuilder;
 public class FastQual {
 	
 	
-	HashMap<String, String> librarySize;
-	HashMap<String, HashMap<String, String>> libraryTemplates;
-	HashMap<String, HashMap<String, String>> libraryFinish;
-	HashMap<String, List<String>> single;
-	HashMap<String, List<String>> mate;
-	HashMap<String, List<String>> multi;
-	HashMap<String, List<String>> finish;
+	static HashMap<String, String> librarySize = new HashMap<String,String>();
+	static HashMap<String, HashMap<String, String>> libraryTemplates= new HashMap<String, HashMap<String, String>>();
+	static HashMap<String, HashMap<String, String>> libraryFinish= new HashMap<String, HashMap<String, String>>();
+	static HashMap<String, List<String>> single = new HashMap<String, List<String>>() ;
+	static HashMap<String, List<String>> mate = new HashMap<String, List<String>>();
+	static HashMap<String, List<String>> multi= new HashMap<String, List<String>>();
+	static HashMap<String, List<String>> finish= new HashMap<String, List<String>>();
+	static HashMap<String, List<String>> ff_reads= new HashMap<String, List<String>>();
+	static HashMap<String, List<String>> rr_reads= new HashMap<String, List<String>>();
 	
 	static HashMap<String, String> fasta=new HashMap<String,String>();
-	HashMap<String, String> qual;
+	static HashMap<String, String> qual = new HashMap<String,String>();
 	
 	
 	
 	
 	
 	
-   public void einlesenXml(String file_name) throws JDOMException, IOException{
+   public static void einlesenXml(String file_name) throws JDOMException, IOException{
 	   
 	    Document doc = null;
 		File f = new File(file_name);
@@ -119,13 +123,17 @@ public class FastQual {
  }
 	
 	
-	public void partitionReads(){
+	public static void partitionReads(){
 		
 		for(Object lib : librarySize.keySet()){ 
 			
 			List<String> one=new LinkedList<String>();
 			List<String> two=new LinkedList<String>();
 			List<String> many=new LinkedList<String>();
+			List<String> fin=new LinkedList<String>();
+			List<String> ff=new LinkedList<String>();
+			List<String> rr=new LinkedList<String>();
+			
 			
 			
 			for(Object temp : libraryTemplates.get(lib).keySet()){
@@ -138,8 +146,21 @@ public class FastQual {
 				if(array.length==2){
 					String[]feature1=array[0].split("\\$");
 					String[]feature2=array[1].split("\\$");
+					
+					if(feature1[1].equals("FORWARD") && feature2[1].equals("FORWARD")){
+						ff.add(feature1[0]);
+						ff.add(feature2[0]);
+					}
+					else if(feature1[1].equals("REVERSE") && feature2[1].equals("REVERSE")){
+						rr.add(feature1[0]);
+						rr.add(feature2[0]);
+					}
+					else{
+					
+					
 					two.add(feature1[0]);
 					two.add(feature2[0]);
+					}
 					
 				}
 				if(array.length>2){
@@ -155,6 +176,22 @@ public class FastQual {
 			single.put(lib.toString(),one);
 			mate.put(lib.toString(),two);
 			multi.put(lib.toString(),many);
+			ff_reads.put(lib.toString(), ff);
+			rr_reads.put(lib.toString(), rr);
+			
+			
+			
+			for(Object temp : libraryFinish.get(lib).keySet()){
+				
+				String [] array=libraryFinish.get(lib).get(temp).split("!");
+				
+					for(int i=0;i<array.length;i++){
+						
+						fin.add(array[i]);}}
+			
+			
+				
+			finish.put(lib.toString(),fin);
 			
 		}				
 	}
@@ -196,25 +233,190 @@ public class FastQual {
 		fasta.put(ti,sequ);
 	}
 	
-	public void einlesenQual(String qual){
+	
+	
+	
+	public static void einlesenQual(String qual_file){
+		File file = new File(qual_file);
+		String ti="";
+		int flag1=0;
+		String quality="";
+		
+		
+		try {
+			BufferedReader buf = new BufferedReader(new FileReader(file));
+
+			String zeile;
+			while ((zeile = buf.readLine()) != null) {
+				if (zeile.startsWith(">")) {
+				if (flag1==1){
+					qual.put(ti,quality);
+				}
+				quality="";
+				String[]header=zeile.split(" ");
+				ti=header[0].split("\\|")[2];
+				flag1=1;
+								
+				}
+				else if(flag1==1){
+				quality+=zeile+"\n";	
+					
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		//damit auch letztes paar gespeichert wird
+		qual.put(ti,quality);
 		
 		
 	}
 	
 	
+
 	
 	
 	
-	
-	public static void main (String[] args){
+	public static void main (String[] args) throws JDOMException, IOException{
 		
 		String xml=args[0];
-		//String fasta=args[1];
-		//String qual=args[2];
+		String fasta_name=args[1];
+		String qual_name=args[2];
 		
-		einlesenFasta(xml);
-		for(Object key : fasta.keySet()){
-			System.out.print(key+"\n"+fasta.get(key));
+		
+		einlesenXml(xml);
+		partitionReads();
+		einlesenFasta(fasta_name);
+		einlesenQual(qual_name);
+		
+		
+		for(String lib_key : librarySize.keySet() ){
+			
+			
+			
+		
+	
+			
+			
+			
+			for(String key : single.keySet()){
+				
+				BufferedWriter Single_Fasta = new BufferedWriter(new FileWriter(new File(
+						  "single"+key+".fasta")));
+				BufferedWriter Single_Qual = new BufferedWriter(new FileWriter(new File(
+						  "single"+key+".qual")));
+				
+				
+				for(String ti: single.get(key)){
+						
+								Single_Fasta.write(">"+ti+"\n"+fasta.get(ti));
+								Single_Qual.write(">"+ti+"\n"+qual.get(ti));
+					
+				}
+				Single_Fasta.close();
+				Single_Qual.close();
+			}
+			
+			
+			
+			for(String key : mate.keySet()){
+				
+				BufferedWriter Mate_Fasta = new BufferedWriter(new FileWriter(new File(
+						  "mate"+key+".fasta")));
+				BufferedWriter Mate_Qual = new BufferedWriter(new FileWriter(new File(
+						  "mate"+key+".qual")));
+				
+				
+				for(String ti: mate.get(key)){
+						
+								Mate_Fasta.write(">"+ti+"\n"+fasta.get(ti));
+								Mate_Qual.write(">"+ti+"\n"+qual.get(ti));
+					
+				}
+				Mate_Fasta.close();
+				Mate_Qual.close();
+			}
+			
+			
+			for(String key : multi.keySet()){
+				
+				BufferedWriter Multi_Fasta = new BufferedWriter(new FileWriter(new File(
+						  "multi"+key+".fasta")));
+				BufferedWriter Multi_Qual = new BufferedWriter(new FileWriter(new File(
+						  "multi"+key+".qual")));
+				
+				
+				for(String ti: multi.get(key)){
+						
+								Multi_Fasta.write(">"+ti+"\n"+fasta.get(ti));
+								Multi_Qual.write(">"+ti+"\n"+qual.get(ti));
+					
+				}
+				Multi_Fasta.close();
+				Multi_Qual.close();
+			}
+			
+			
+			for(String key : finish.keySet()){
+				
+				BufferedWriter finish_Fasta = new BufferedWriter(new FileWriter(new File(
+						  "finish"+key+".fasta")));
+				BufferedWriter finish_Qual = new BufferedWriter(new FileWriter(new File(
+						  "finish"+key+".qual")));
+				
+				
+				for(String ti: finish.get(key)){
+						
+								finish_Fasta.write(">"+ti+"\n"+fasta.get(ti));
+								finish_Qual.write(">"+ti+"\n"+qual.get(ti));
+					
+				}
+				finish_Fasta.close();
+				finish_Qual.close();
+			}
+			
+			
+			for(String key : ff_reads.keySet()){
+				
+				BufferedWriter ff_reads_Fasta = new BufferedWriter(new FileWriter(new File(
+						  "ff_reads"+key+".fasta")));
+				BufferedWriter ff_reads_Qual = new BufferedWriter(new FileWriter(new File(
+						  "ff_reads"+key+".qual")));
+				
+				
+				for(String ti: ff_reads.get(key)){
+						
+								ff_reads_Fasta.write(">"+ti+"\n"+fasta.get(ti));
+								ff_reads_Qual.write(">"+ti+"\n"+qual.get(ti));
+					
+				}
+				ff_reads_Fasta.close();
+				ff_reads_Qual.close();
+			}
+			
+			
+			
+				for(String key : rr_reads.keySet()){
+				
+				BufferedWriter rr_reads_Fasta = new BufferedWriter(new FileWriter(new File(
+						  "rr_reads"+key+".fasta")));
+				BufferedWriter rr_reads_Qual = new BufferedWriter(new FileWriter(new File(
+						  "rr_reads"+key+".qual")));
+				
+				
+				for(String ti: rr_reads.get(key)){
+						
+								rr_reads_Fasta.write(">"+ti+"\n"+fasta.get(ti));
+								rr_reads_Qual.write(">"+ti+"\n"+qual.get(ti));
+					
+				}
+				rr_reads_Fasta.close();
+				rr_reads_Qual.close();
+			}
+			
+			
+			
 		}
 		
 		
