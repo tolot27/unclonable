@@ -21,7 +21,8 @@ public class FastQual {
 	static HashMap<String, HashMap<String, String>> libraryTemplates= new HashMap<String, HashMap<String, String>>();
 	static HashMap<String, HashMap<String, String>> libraryFinish= new HashMap<String, HashMap<String, String>>();
 	static HashMap<String, List<String>> single = new HashMap<String, List<String>>() ;
-	static HashMap<String, List<String>> mate = new HashMap<String, List<String>>();
+	static HashMap<String, List<String>> mate_f = new HashMap<String, List<String>>();
+	static HashMap<String, List<String>> mate_r = new HashMap<String, List<String>>();
 	static HashMap<String, List<String>> multi= new HashMap<String, List<String>>();
 	static HashMap<String, List<String>> finish= new HashMap<String, List<String>>();
 	static HashMap<String, List<String>> ff_reads= new HashMap<String, List<String>>();
@@ -128,7 +129,8 @@ public class FastQual {
 		for(Object lib : librarySize.keySet()){ 
 			
 			List<String> one=new LinkedList<String>();
-			List<String> two=new LinkedList<String>();
+			List<String> two_f=new LinkedList<String>();
+			List<String> two_r=new LinkedList<String>();
 			List<String> many=new LinkedList<String>();
 			List<String> fin=new LinkedList<String>();
 			List<String> ff=new LinkedList<String>();
@@ -157,9 +159,15 @@ public class FastQual {
 					}
 					else{
 					
+					if(feature1[1].equals("FORWARD")){
+					two_f.add(feature1[0]);
+					two_r.add(feature2[0]);
+					}
+					else{
+					two_f.add(feature2[0]);
+					two_r.add(feature1[0]);
 					
-					two.add(feature1[0]);
-					two.add(feature2[0]);
+					}
 					}
 					
 				}
@@ -174,7 +182,8 @@ public class FastQual {
 			}
 			
 			single.put(lib.toString(),one);
-			mate.put(lib.toString(),two);
+			mate_f.put(lib.toString(),two_f);
+			mate_r.put(lib.toString(),two_r);
 			multi.put(lib.toString(),many);
 			ff_reads.put(lib.toString(), ff);
 			rr_reads.put(lib.toString(), rr);
@@ -320,22 +329,40 @@ public class FastQual {
 			
 			
 			
-			for(String key : mate.keySet()){
+			for(String key : mate_f.keySet()){
 				
-				BufferedWriter Mate_Fasta = new BufferedWriter(new FileWriter(new File(
-						  "mate"+key+".fasta")));
-				BufferedWriter Mate_Qual = new BufferedWriter(new FileWriter(new File(
-						  "mate"+key+".qual")));
+				BufferedWriter Mate_f_Fasta = new BufferedWriter(new FileWriter(new File(
+						  "mate_f"+key+".fasta")));
+				BufferedWriter Mate_f_Qual = new BufferedWriter(new FileWriter(new File(
+						  "mate_f"+key+".qual")));
 				
 				
-				for(String ti: mate.get(key)){
+				for(String ti: mate_f.get(key)){
 						
-								Mate_Fasta.write(">"+ti+"\n"+fasta.get(ti));
-								Mate_Qual.write(">"+ti+"\n"+qual.get(ti));
+								Mate_f_Fasta.write(">"+ti+"\n"+fasta.get(ti));
+								Mate_f_Qual.write(">"+ti+"\n"+qual.get(ti));
 					
 				}
-				Mate_Fasta.close();
-				Mate_Qual.close();
+				Mate_f_Fasta.close();
+				Mate_f_Qual.close();
+			}
+			
+			for(String key : mate_r.keySet()){
+				
+				BufferedWriter Mate_r_Fasta = new BufferedWriter(new FileWriter(new File(
+						  "mate_r"+key+".fasta")));
+				BufferedWriter Mate_r_Qual = new BufferedWriter(new FileWriter(new File(
+						  "mate_r"+key+".qual")));
+				
+				
+				for(String ti: mate_r.get(key)){
+						
+								Mate_r_Fasta.write(">"+ti+"\n"+fasta.get(ti));
+								Mate_r_Qual.write(">"+ti+"\n"+qual.get(ti));
+					
+				}
+				Mate_r_Fasta.close();
+				Mate_r_Qual.close();
 			}
 			
 			
