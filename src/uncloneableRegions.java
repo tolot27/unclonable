@@ -42,6 +42,8 @@ public class uncloneableRegions {
 	static double[] meanCov;
 	static int counterError;
 	
+	static List<String[]> info_sam = new LinkedList<String[]>();
+	
 	
 
 	
@@ -91,6 +93,13 @@ public class uncloneableRegions {
 		HashMap Speicher_mehrere_Ti_lokal = new HashMap();
 
 		
+		
+		  
+							
+		FileWriter Ausgabe_NichtGemappt = new FileWriter(""+Organismus_name+"_NichtGemappt.txt",true);
+		
+		
+		
 
 		for (Object key : TiTi.keySet()) {
 
@@ -112,8 +121,13 @@ public class uncloneableRegions {
 			// Stop-Position hinzugefgt
 			// Tis sind durch ! getrennt, Eigenschaften der Tis durch $
 			int j=0;
+			
+			
+			
+			
 			for (int i = 0; i < anzahlTis; i++) {
-
+				
+				
 				if (TiFRStartStop.get(Tis[i]) != null) {		//TiTi beinhaltet alle Tis, unabhngig von Contig, einer bestimmten library Gr§e. TiFRStartStop beinhaltet alle Tis, unabhngig von library-Gr§e, eines bestimmten Contigs. 	
 					if (j == 0) {
 						TiTineu.put(key,
@@ -125,10 +139,13 @@ public class uncloneableRegions {
 					}
 				
 				}
+				else{
+					Ausgabe_NichtGemappt.append(Tis[i]+"\n");
+				}
 			}
 		}
 		
-		
+		Ausgabe_NichtGemappt.close();
 	
 		//<<<<<<<<<<<<<<<<<<<<<<<<
 		FileWriter Ausgabe_größer2Lib = new FileWriter(
@@ -1698,6 +1715,8 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 	
 	//ntige Eingabeparameter: Args[0]=ASSEMBLY.xml , Args[1]=TraceInfo.xml
 	// die INSD-Datei muss als "INSD_contig1.xml vorliegen (wobei die 1 das entsprechende Contig ist)
+		
+		//für mapping-Variante noch 3. Uebergabeparameter (SAM-File)
 	public static void main(String[] args) throws JDOMException, IOException {
 
 
@@ -1752,6 +1771,15 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		}
 		
 		
+		lesenSam lesSam = new lesenSam();
+		
+		info_sam=lesSam.info_contig(args[2]);
+		
+		
+		
+		BufferedWriter Ausgabe_NichtGemappt = new BufferedWriter(new FileWriter(new File(
+				""+Organismus_name+"_NichtGemappt.txt")));
+		
 		
 		
 		
@@ -1771,7 +1799,10 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 					  "Contig"+i+"_!!!!Errors!!!!.txt")));
 			Ausgabe_größer2Lib.close();
 			
-			
+			HashMap TiFRStartStop = new HashMap();
+			TiFRStartStop = lesSam.einlesenSam(args[2], info_sam.get(i-1)[0]);
+			laengeSequenz = Integer.parseInt(info_sam.get(i-1)[1]);
+		
 			
 			for (int l=0;l<2;l++){
 				
@@ -1784,8 +1815,9 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				
 				// (2) Erzeugen von HashMap, die jedem read tiling-direction,  traceconsensus start und stop-Position zuordnet
 				// (z.B. Ti -> tiling_direction$start$stop
-				HashMap TiFRStartStop = new HashMap();
-				TiFRStartStop=lesenVonASSEMBLY(args[0],i);
+				//HashMap TiFRStartStop = new HashMap();
+				//TiFRStartStop=lesenVonASSEMBLY(args[0],i);
+				
 				
 				
 				// (3) Erweitert mit Hilfe von ASSEMBLY.xml die in (1) erzeugte HashMap mit (2)
