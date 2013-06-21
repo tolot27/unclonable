@@ -208,7 +208,7 @@ public class uncloneableRegions {
 					if (matR.find()){
 					
 					//Integer.parseInt(ti0[2])<Integer.parseInt(ti1[2])&&
-					if( (((Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]))<(maxLaenge)) && ((Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]))>0)) || (((laengeSequenz-Integer.parseInt(ti0[3]))+Integer.parseInt(ti1[2]))<(maxLaenge))){
+					if( (((Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]))<(maxLaenge)) && ((Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]))>0)) || (((laengeSequenz-Integer.parseInt(ti0[3]))+Integer.parseInt(ti1[2]))<(maxLaenge)) || (((laengeSequenz-Integer.parseInt(ti1[3]))+Integer.parseInt(ti0[2]))<(maxLaenge))){
 					Speicher_2_Ti_lokal.put(key, TiTineu.get(key));
 					
 					
@@ -246,7 +246,7 @@ public class uncloneableRegions {
 					
 					else {
 					
-					if((( (Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]))<(maxLaenge))&& ((Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]))>0)) || (((laengeSequenz-Integer.parseInt(ti1[3]))+Integer.parseInt(ti0[2]))<(maxLaenge))){
+					if((( (Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]))<(maxLaenge))&& ((Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]))>0)) || (((laengeSequenz-Integer.parseInt(ti1[3]))+Integer.parseInt(ti0[2]))<(maxLaenge)) || (((laengeSequenz-Integer.parseInt(ti0[3]))+Integer.parseInt(ti1[2]))<(maxLaenge))){
 					Speicher_2_Ti_lokal.put(key, tis[1]+"!"+tis[0]);
 					if((Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]))>0){
 					insert=insert+Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]);
@@ -372,8 +372,10 @@ public class uncloneableRegions {
 	
 	//erstellt aus einem zweier Paar TiFRStartStop eine HashMap mit Start und Stop-Position
 	//des Templates, dabei wird der Kreisschluss beachtet
-	public static HashMap StartStop (HashMap map, int contig_size, int contig){
+	public static HashMap StartStop (HashMap map, int contig_size, int contig, int librarySize, int stdev){
 			
+		double maxLaenge = librarySize+2.5*stdev;
+		
 		HashMap<String,int[]> StartStop = new HashMap<String,int[]>();
 		
 		
@@ -395,7 +397,7 @@ public class uncloneableRegions {
 			
 			//ist die Position des Forward-Read kleiner als die des Reverse-Reads, dann wird die Start
 			// und Stop-Position ohne Vernderung in den Hash gespeichert
-			if (Integer.parseInt(mate1[2])<Integer.parseInt(mate2[3])){
+			if (Integer.parseInt(mate1[2])<Integer.parseInt(mate2[2]) && (Integer.parseInt(mate2[2])-Integer.parseInt(mate1[3]))< maxLaenge){
 				
 				int [] WertePaar=new int[2];
 				WertePaar[0]=Integer.parseInt(mate1[2]);
@@ -405,7 +407,7 @@ public class uncloneableRegions {
 				
 			}
 			else{
-				
+				if(Integer.parseInt(mate1[2])<Integer.parseInt(mate2[2])){
 				//ist die Position des Forward-Read gr§er, so wird nun der zirkulre Schluss behandelt
 				//dafr wird vom Forward-Read bis zum Ende ein neues Template erstellt
 				// und vom Anfang bis zum Reverse-Read
@@ -416,20 +418,43 @@ public class uncloneableRegions {
 				wertepaar_ring[3]=Integer.parseInt(mate2[3]);
 				Ringschluss.put(key.toString(), wertepaar_ring);
 				
-				
 				int [] WertePaar=new int[2];
-				//Behandelt Forward Read am Ende
-				WertePaar[0]=Integer.parseInt(mate1[2]);
+				//Behandelt Reverse Read am Ende
+				WertePaar[0]=Integer.parseInt(mate2[2]);
 				WertePaar[1]=contig_size;
 				StartStop.put(key+"$1", WertePaar);
 				globalStartStop.put(key+"$1", WertePaar);
 				
-				//Behandelt Reverse Read am Anfang
+				//Behandelt Forward Read am Anfang
 				WertePaar[0]=0;
-				WertePaar[1]=Integer.parseInt(mate2[3]);
+				WertePaar[1]=Integer.parseInt(mate1[3]);
 				StartStop.put(key+"$2", WertePaar);
 				globalStartStop.put(key+"$2", WertePaar);
 				
+				
+				}
+				else{
+					int [] wertepaar_ring=new int[4];
+					wertepaar_ring[0]=Integer.parseInt(mate1[2]);
+					wertepaar_ring[1]=Integer.parseInt(mate1[3]);
+					wertepaar_ring[2]=Integer.parseInt(mate2[2]);
+					wertepaar_ring[3]=Integer.parseInt(mate2[3]);
+					Ringschluss.put(key.toString(), wertepaar_ring);
+					
+					int [] WertePaar=new int[2];
+					//Behandelt Forward Read am Ende
+					WertePaar[0]=Integer.parseInt(mate1[2]);
+					WertePaar[1]=contig_size;
+					StartStop.put(key+"$1", WertePaar);
+					globalStartStop.put(key+"$1", WertePaar);
+					
+					//Behandelt Reverse Read am Anfang
+					WertePaar[0]=0;
+					WertePaar[1]=Integer.parseInt(mate2[3]);
+					StartStop.put(key+"$2", WertePaar);
+					globalStartStop.put(key+"$2", WertePaar);
+					
+				}
 												
 			}
 	
@@ -849,7 +874,7 @@ public class uncloneableRegions {
 			
 			Element seq = wurzel.getChild("INSDSeq");
 			
-            contig_laenge = Integer.parseInt(seq.getChildText("INSDSeq_length"));
+            contig_laenge = Integer.parseInt(seq.getChildText("INSDSeq_length"))-1;
 			
 			Element feature = seq.getChild("INSDSeq_feature-table");
 			
@@ -1658,6 +1683,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		   			int[]Array=Ringschluss.get(key);
 		   			AusgebenRingschluss.write(key+"\t"+Array[0]+"\t"+Array[1]+"\t"+Array[2]+"\t"+Array[3]+"\n");
 		   		 }
+		   		 AusgebenRingschluss.close();
 		   		}
 			
 		
@@ -1801,7 +1827,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			
 			HashMap TiFRStartStop = new HashMap();
 			TiFRStartStop = lesSam.einlesenSam(args[2], info_sam.get(i-1)[0]);
-			laengeSequenz = Integer.parseInt(info_sam.get(i-1)[1]);
+			laengeSequenz = Integer.parseInt(info_sam.get(i-1)[1])-1;
 		
 			
 			for (int l=0;l<2;l++){
@@ -1840,7 +1866,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				
 				//umschreiben in nur Start und Stop- Positionen
 				HashMap startStop = new HashMap();
-				startStop = StartStop(ZweierTiTi_FRStartStop, laengeSequenz, i);
+				startStop = StartStop(ZweierTiTi_FRStartStop, laengeSequenz, i, libs[l], Integer.parseInt(librarySize.get(string_libs[l]).toString()));
 				
 			//*	int[] PotGenPosition = Window(startStop, laengeSequenz, Integer.parseInt(key.toString()));
 				
@@ -1937,7 +1963,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				
 				
 		}
-		 statistik(start_time);			
+		statistik(start_time);			
 	}
 
 }

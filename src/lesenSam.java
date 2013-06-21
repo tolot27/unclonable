@@ -70,6 +70,7 @@ public static HashMap einlesenSam(String file_name, String contig_id){
 				if(Integer.parseInt(zeileArray[3])!=0){
 				int stop = Integer.parseInt(zeileArray[3])+zeileArray[9].length()-2;
 				
+				if(!map.containsKey(zeileArray[0])){
 				if(Integer.parseInt(zeileArray[8])>0){
 				map.put(zeileArray[0], "F$"+(Integer.parseInt(zeileArray[3])-1)+"$"+ stop);	
 					
@@ -77,7 +78,7 @@ public static HashMap einlesenSam(String file_name, String contig_id){
 				else{
 					map.put(zeileArray[0], "R$"+(Integer.parseInt(zeileArray[3])-1)+"$"+ stop);	
 				}
-				
+				}
 				}
 				}	
 				}
