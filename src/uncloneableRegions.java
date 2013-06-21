@@ -1842,13 +1842,15 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			TiTi= lesenVonTrace(args[1],libs[l]);
 			
 			// put all ti in hash
-			for (Object key : TiTi.keySet()) {
+			/*
+			   for (Object key : TiTi.keySet()) {
 				String ids = TiTi.get(key).toString();
 				String [] split_id = ids.split("\\$");
 				for (int a=0; a<split_id.length; a++){
 					all_reads.put(split_id[a], 1);
 				}
 			}
+			*/
 			
 				
 				// (2) Erzeugen von HashMap, die jedem read tiling-direction,  traceconsensus start und stop-Position zuordnet
@@ -1979,10 +1981,18 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		BufferedWriter Ausgabe_NichtGemappt = new BufferedWriter(new FileWriter(new File(
 				""+Organismus_name+"_NichtGemappt.txt")));
-		for (Object key : all_reads.keySet()) {
-			if(Integer.parseInt(mapped_reads.get(key).toString())!=1){
-				Ausgabe_NichtGemappt.write(key+"\n");
-			}
+		
+		for(int i=0; i<Speicher_2_Ti.size();i++){
+	   		 for(Object key : Speicher_2_Ti.get(i).keySet()){
+	   			String Eintrag=Speicher_2_Ti.get(i).get(key).toString();
+	   			String[]EinzelArray=Eintrag.split("!");
+	   			for(int j=0;j<EinzelArray.length;j++){
+	   			String[]Array=EinzelArray[j].toString().split("\\$");
+	   			
+			if(Integer.parseInt(mapped_reads.get(Array[0]).toString())!=1){
+				Ausgabe_NichtGemappt.write(Array[0]+"\n");
+			}}
+		}
 		}
 		Ausgabe_NichtGemappt.close();
 		
