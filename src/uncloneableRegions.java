@@ -43,6 +43,8 @@ public class uncloneableRegions {
 	static int counterError;
 	
 	static List<String[]> info_sam = new LinkedList<String[]>();
+	static HashMap mapped_reads = new HashMap();
+	static HashMap all_reads = new HashMap();
 	
 	
 
@@ -96,7 +98,7 @@ public class uncloneableRegions {
 		
 		  
 							
-		FileWriter Ausgabe_NichtGemappt = new FileWriter(""+Organismus_name+"_NichtGemappt.txt",true);
+		
 		
 		
 		
@@ -139,13 +141,11 @@ public class uncloneableRegions {
 					}
 				
 				}
-				else{
-					Ausgabe_NichtGemappt.append(Tis[i]+"\n");
-				}
+				
 			}
 		}
 		
-		Ausgabe_NichtGemappt.close();
+		
 	
 		//<<<<<<<<<<<<<<<<<<<<<<<<
 		FileWriter Ausgabe_größer2Lib = new FileWriter(
@@ -1803,8 +1803,6 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		
 		
-		BufferedWriter Ausgabe_NichtGemappt = new BufferedWriter(new FileWriter(new File(
-				""+Organismus_name+"_NichtGemappt.txt")));
 		
 		
 		
@@ -1828,6 +1826,11 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			HashMap TiFRStartStop = new HashMap();
 			TiFRStartStop = lesSam.einlesenSam(args[2], info_sam.get(i-1)[0]);
 			laengeSequenz = Integer.parseInt(info_sam.get(i-1)[1])-1;
+			
+			// put mapped ti in hash
+			for (Object key : TiFRStartStop.keySet()) {
+				mapped_reads.put(key, 1);
+			}
 		
 			
 			for (int l=0;l<2;l++){
@@ -1837,6 +1840,15 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				// (1) Erzeugen von HashMap zu Contig + librarySize (z.B. template_id -> ti$ti)
 				HashMap TiTi = new HashMap();
 			TiTi= lesenVonTrace(args[1],libs[l]);
+			
+			// put all ti in hash
+			for (Object key : TiTi.keySet()) {
+				String ids = TiTi.get(key).toString();
+				String [] split_id = ids.split("\\$");
+				for (int a=0; a<split_id.length; a++){
+					all_reads.put(split_id[a], 1);
+				}
+			}
 			
 				
 				// (2) Erzeugen von HashMap, die jedem read tiling-direction,  traceconsensus start und stop-Position zuordnet
@@ -1963,7 +1975,17 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				
 				
 		}
-		statistik(start_time);			
+		statistik(start_time);		
+		
+		BufferedWriter Ausgabe_NichtGemappt = new BufferedWriter(new FileWriter(new File(
+				""+Organismus_name+"_NichtGemappt.txt")));
+		for (Object key : all_reads.keySet()) {
+			if(Integer.parseInt(mapped_reads.get(key).toString())!=1){
+				Ausgabe_NichtGemappt.write(key+"\n");
+			}
+		}
+		Ausgabe_NichtGemappt.close();
+		
 	}
 
 }
