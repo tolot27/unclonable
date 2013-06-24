@@ -58,8 +58,16 @@ public class uncloneableRegions {
 		
 		for (Object key : startStop.keySet()) {
 			
+			if(key.equals("10995280216771111")){
+			System.out.println(" ");	
+			}
+			if(key.equals("10995280216772222")){
+				System.out.println(" ");	
+				}
 			if(startStop.get(key)[0]>=0 && startStop.get(key)[1]>=0 && startStop.get(key)[0]<=contig_size && startStop.get(key)[1]<=contig_size){
 				
+				System.out.println(startStop.get(key)[0]);
+				System.out.println(startStop.get(key)[1]);
 				for (int i = startStop.get(key)[0]; i <= startStop.get(key)[1]; i++ ){
 					
 					coverage[i]++;
@@ -422,14 +430,15 @@ public class uncloneableRegions {
 				//Behandelt Reverse Read am Ende
 				WertePaar[0]=Integer.parseInt(mate2[2]);
 				WertePaar[1]=contig_size;
-				StartStop.put(key+"$1", WertePaar);
-				globalStartStop.put(key+"$1", WertePaar);
+				StartStop.put(key+"1111", WertePaar);
+				globalStartStop.put(key+"1111", WertePaar);
 				
+				int [] WertePaar2= new int[2];
 				//Behandelt Forward Read am Anfang
-				WertePaar[0]=0;
-				WertePaar[1]=Integer.parseInt(mate1[3]);
-				StartStop.put(key+"$2", WertePaar);
-				globalStartStop.put(key+"$2", WertePaar);
+				WertePaar2[0]=0;
+				WertePaar2[1]=Integer.parseInt(mate1[3]);
+				StartStop.put(key+"2222", WertePaar2);
+				globalStartStop.put(key+"2222", WertePaar2);
 				
 				
 				}
@@ -445,14 +454,15 @@ public class uncloneableRegions {
 					//Behandelt Forward Read am Ende
 					WertePaar[0]=Integer.parseInt(mate1[2]);
 					WertePaar[1]=contig_size;
-					StartStop.put(key+"$1", WertePaar);
-					globalStartStop.put(key+"$1", WertePaar);
+					StartStop.put(key+"1111", WertePaar);
+					globalStartStop.put(key+"1111", WertePaar);
 					
 					//Behandelt Reverse Read am Anfang
-					WertePaar[0]=0;
-					WertePaar[1]=Integer.parseInt(mate2[3]);
-					StartStop.put(key+"$2", WertePaar);
-					globalStartStop.put(key+"$2", WertePaar);
+					int [] WertePaar2= new int[2];
+					WertePaar2[0]=0;
+					WertePaar2[1]=Integer.parseInt(mate2[3]);
+					StartStop.put(key+"2222", WertePaar2);
+					globalStartStop.put(key+"2222", WertePaar2);
 					
 				}
 												

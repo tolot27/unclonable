@@ -286,7 +286,7 @@ public class FastQual {
 
 	
 	
-	
+/*	
 	public static void main (String[] args) throws JDOMException, IOException{
 		
 		String xml=args[0];
@@ -449,5 +449,5 @@ public class FastQual {
 		
 		
 		
-	}
+	}*/
 }
