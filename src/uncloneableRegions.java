@@ -58,16 +58,10 @@ public class uncloneableRegions {
 		
 		for (Object key : startStop.keySet()) {
 			
-			if(key.equals("10995280216771111")){
-			System.out.println(" ");	
-			}
-			if(key.equals("10995280216772222")){
-				System.out.println(" ");	
-				}
+			
 			if(startStop.get(key)[0]>=0 && startStop.get(key)[1]>=0 && startStop.get(key)[0]<=contig_size && startStop.get(key)[1]<=contig_size){
 				
-				System.out.println(startStop.get(key)[0]);
-				System.out.println(startStop.get(key)[1]);
+			
 				for (int i = startStop.get(key)[0]; i <= startStop.get(key)[1]; i++ ){
 					
 					coverage[i]++;
