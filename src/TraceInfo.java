@@ -55,10 +55,10 @@ public class TraceInfo {
 		for (Element e : trace) {
 
 			// nur Eintrge die durch WGS generiert wurden, werden aufgenommen
-			if (e.getChildText("trace_type_code").equals("WGS")) {
+			if (e.getChildText("TRACE_TYPE_CODE").equals("WGS")) {
 
-		        String insertSize = e.getChildText("insert_size");
-		        String stdev = e.getChildText("insert_stdev");
+		        String insertSize = e.getChildText("INSERT_SIZE");
+		        String stdev = e.getChildText("INSERT_STDEV");
 		        if(stdev != null){
 				librarySize.put(insertSize,stdev);}
 				

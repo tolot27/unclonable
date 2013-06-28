@@ -45,8 +45,10 @@ public class uncloneableRegions {
 	static List<String[]> info_sam = new LinkedList<String[]>();
 	static HashMap mapped_reads = new HashMap();
 	static HashMap all_reads = new HashMap();
+	static List<int[]> info_mapped = new LinkedList<int[]>();
 	
-	
+	static HashMap<Integer,String> contig_ID = new HashMap<Integer,String>();
+
 
 	
 	//Die Coverage aller Templates wird berechnet
@@ -216,7 +218,8 @@ public class uncloneableRegions {
 					
 					if((Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]))>0){
 					insert=insert+(Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]));	
-					zaehler++;}}
+					zaehler++;}
+					}
 					//wenn maxLaenge ueberschritten wird
 					else{
 						int aus1 = (Integer.parseInt(ti1[2])-Integer.parseInt(ti0[3]));
@@ -253,6 +256,7 @@ public class uncloneableRegions {
 					if((Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]))>0){
 					insert=insert+Integer.parseInt(ti0[2])-Integer.parseInt(ti1[3]);
 					zaehler++;}
+					
 					}
 					// wenn maxLaenge ueberschritten wird
 					else{
@@ -776,17 +780,16 @@ public class uncloneableRegions {
 		for (Element e : trace) {
 
 			// nur Eintrge die durch WGS generiert wurden, werden aufgenommen
-			if (e.getChildText("trace_type_code").equals("WGS")) {
+			if (e.getChildText("TRACE_TYPE_CODE").equals("WGS")) {
 
 				
 				
 				
 				// Aufteilen der Templates in Hashes je nach der Library-Gr§e, die bergeben wurde
-				if (Integer.parseInt(e.getChildText("insert_size")) == size) {
+				if (Integer.parseInt(e.getChildText("INSERT_SIZE")) == size) {
 
-					String templateID = e.getChildText("template_id");
-					String TI = (e.getChild("ncbi_trace_archive"))
-							.getChildText("ti");
+					String templateID = e.getChildText("TEMPLATE_ID");
+					String TI = e.getChildText("TI");
 
 					// Speichern der Ti zu den dazugehrigen Templates, wenn erster Eintrag: dann reinschreiben, sonst an bestehenden
 					//Eintrag mit $ anhngen
@@ -1346,11 +1349,12 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			//gibt die GesamtCoverage aus
 			BufferedWriter Ausgabe_gesamtCoverage = new BufferedWriter(new FileWriter(new File(
 					  Organismus_name+"_"+contig+"_gesamtCoverage.txt")));
+			Ausgabe_gesamtCoverage.write("variableStep chrom="+ contig_ID.get(contig)+"\n");
 				for (int k = 0; k < compCov.length; k++) {
 						
 					
 				
-					Ausgabe_gesamtCoverage.write(compCov[k] + "\t"+k+"\n");
+					Ausgabe_gesamtCoverage.write(k+1 + "\t"+compCov[k]+"\n");
 								
 								   					}
 				Ausgabe_gesamtCoverage.close();
@@ -1565,7 +1569,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		
 		
-		public static void statistik(long start_time) throws IOException{
+		public static void statistik(long start_time, int splitReads) throws IOException{
 			
 			   BufferedWriter Ausgabe_Statistik = new BufferedWriter(new FileWriter(new File(
 					   "Statistik_"+Organismus_name+".txt")));
@@ -1618,10 +1622,30 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   }
 			   
 			   
-			   Ausgabe_Statistik.write("\n\nAnzahl der einzel-Reads: "+AnzahlEinzelReads+"\n");
-			   Ausgabe_Statistik.write("Anzahl der mehrfach-Templates: "+AnzahlMehrfachTemplates+"\n");
-			   Ausgabe_Statistik.write("Anzahl der valid-Templates: "+AnzahlValidTemplates+"\n");
-			   Ausgabe_Statistik.write("Anzahl der fehlerhaften mate-Templates: "+counterError);
+			   Ausgabe_Statistik.write("\n\nMapping: \n");
+			   int gesamt=0;
+			   int gesamtGemappt=0;
+			   for(int i=1; i<=info_mapped.size(); i++){
+					  Ausgabe_Statistik.write("Contig"+i+": \n");
+					  Ausgabe_Statistik.write("Anzahl der gemappten Reads: "+info_mapped.get(i-1)[0]+"\n");
+					  gesamt += info_mapped.get(i-1)[0];
+					  gesamtGemappt += info_mapped.get(i-1)[0];
+				  }
+			   gesamt += info_mapped.get(0)[1];
+			   Ausgabe_Statistik.write("\nAnzahl der insgesamt zu mappenden Reads: "+gesamt+"\n");
+			   Ausgabe_Statistik.write("Anzahl der insgesamt gemappten Reads: "+gesamtGemappt+"\n");
+			   Ausgabe_Statistik.write("Anzahl der insgesamt ungemappten Reads: "+info_mapped.get(0)[1]+"\n");
+			   
+			   
+			   
+			   
+			   Ausgabe_Statistik.write("\n\nAnzahl der gemappten einzel-Reads: "+AnzahlEinzelReads+"\n");
+			   Ausgabe_Statistik.write("Anzahl der gemappten valid-Templates: "+AnzahlValidTemplates+"\n");
+			   Ausgabe_Statistik.write("Anzahl der gemappten fehlerhaften mate-Templates: "+counterError+"\n");
+			   Ausgabe_Statistik.write("Anzahl der gemappten pseudo Reads durch Split: "+splitReads+"\n");
+			   
+			 
+			   
 			   
 			   Ausgabe_Statistik.write("\n\nMean Template Coverage: \n");
 			  for(int i=1; i<=meanCov.length; i++){
@@ -1753,7 +1777,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		
 		long start_time = System.currentTimeMillis();
-		//Args[0]=ASSEMBLY.xml , Args[1]=TraceInfo.xml
+		//Args[0]=ASSEMBLY.xml , Args[1]=TraceInfo.xml/ .xml
 		TraceInfo traceInfo = new TraceInfo();
 		traceInfo.auslesenAnzahl(args[1],args[0]);
 		librarySize = traceInfo.getLibrarySize();
@@ -1810,7 +1834,6 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		
 		
-		
 		//Fr jedes Contig, fr jede library/insert-Size 
 		for(int i=1;i<=AnzahlContigs;i++){
 			
@@ -1828,8 +1851,14 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			Ausgabe_größer2Lib.close();
 			
 			HashMap TiFRStartStop = new HashMap();
-			TiFRStartStop = lesSam.einlesenSam(args[2], info_sam.get(i-1)[0]);
+			TiFRStartStop = lesSam.einlesenSam(args[2], info_sam.get(i-1)[0], i);
+			info_mapped.add(lesSam.nichtGemappt(args[2], info_sam.get(i-1)[0], i));
 			laengeSequenz = Integer.parseInt(info_sam.get(i-1)[1])-1;
+			
+			String[] ID = info_sam.get(i-1)[0].split("\\|");
+			
+			contig_ID.put(i, ID[3].split("\\.")[0]);
+			
 			
 			// put mapped ti in hash
 			for (Object key : TiFRStartStop.keySet()) {
@@ -1871,7 +1900,6 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				//nur "legale" zweier-Paare werden weiter verwendet, einzelne und mehrfache Ti-Partner werden extern gespeichert
 				HashMap ZweierTiTi_FRStartStop = new HashMap();
 			ZweierTiTi_FRStartStop = startEnd(TiTi, TiFRStartStop, libs[l], Integer.parseInt(librarySize.get(string_libs[l]).toString()), i, laengeSequenz);
-			
 				
 				
 			//*	int[] CoverageF =Coverage( alleStartStopF, laengeSequenz);
@@ -1981,25 +2009,10 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				
 				
 		}
-		statistik(start_time);		
 		
-		BufferedWriter Ausgabe_NichtGemappt = new BufferedWriter(new FileWriter(new File(
-				""+Organismus_name+"_NichtGemappt.txt")));
+		statistik(start_time, lesenSam.getZaehler());		
 		
-		for(int i=0; i<Speicher_2_Ti.size();i++){
-	   		 for(Object key : Speicher_2_Ti.get(i).keySet()){
-	   			String Eintrag=Speicher_2_Ti.get(i).get(key).toString();
-	   			String[]EinzelArray=Eintrag.split("!");
-	   			for(int j=0;j<EinzelArray.length;j++){
-	   			String[]Array=EinzelArray[j].toString().split("\\$");
-	   			
-			if(Integer.parseInt(mapped_reads.get(Array[0]).toString())!=1){
-				Ausgabe_NichtGemappt.write(Array[0]+"\n");
-			}}
-		}
-		}
-		Ausgabe_NichtGemappt.close();
-		
+	
 	}
 
 }
