@@ -140,7 +140,11 @@ public class FastQual {
 			
 			for(Object temp : libraryTemplates.get(lib).keySet()){
 				
+				
+				
 				String [] array=libraryTemplates.get(lib).get(temp).split("!");
+				
+				
 				if(array.length==1){
 					String[]feature=array[0].split("\\$");
 					one.add(feature[0]);
@@ -149,17 +153,24 @@ public class FastQual {
 					String[]feature1=array[0].split("\\$");
 					String[]feature2=array[1].split("\\$");
 					
-					if(feature1[1].equals("FORWARD") && feature2[1].equals("FORWARD")){
+					if(feature1[0].equals("515514426")){
+						System.out.println("");
+					}
+					if(feature2[0].equals("515514426")){
+						System.out.println("");
+					}
+					
+					if((feature1[1].equals("FORWARD")||feature1[1].equals("F")) && (feature2[1].equals("FORWARD")||feature2[1].equals("F"))){
 						ff.add(feature1[0]);
 						ff.add(feature2[0]);
 					}
-					else if(feature1[1].equals("REVERSE") && feature2[1].equals("REVERSE")){
+					else if((feature1[1].equals("REVERSE")||feature1[1].equals("R")) && (feature2[1].equals("REVERSE")||feature2[1].equals("R"))){
 						rr.add(feature1[0]);
 						rr.add(feature2[0]);
 					}
 					else{
 					
-					if(feature1[1].equals("FORWARD")){
+					if(feature1[1].equals("FORWARD") ||feature1[1].equals("F")){
 					two_f.add(feature1[0]);
 					two_r.add(feature2[0]);
 					}
@@ -286,7 +297,7 @@ public class FastQual {
 
 	
 	
-/*	
+
 	public static void main (String[] args) throws JDOMException, IOException{
 		
 		String xml=args[0];
@@ -449,5 +460,5 @@ public class FastQual {
 		
 		
 		
-	}*/
+	}
 }

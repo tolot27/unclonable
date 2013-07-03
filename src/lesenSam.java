@@ -120,13 +120,15 @@ public class lesenSam {
 	}
 	
 	
-public static HashMap einlesenSam(String file_name, String contig_id, int contig) throws IOException{
+public static HashMap einlesenSam(String file_name, String contig_id, int contig, String Organismus_Name) throws IOException{
 		
 		File file = new File(file_name);
 		HashMap<String,String> map = new HashMap<String, String>();
+		
+		String id = contig_id;
 			
 		BufferedWriter Ausgabe_SplitRead = new BufferedWriter(new FileWriter(new File(
-				""+contig+"_SplitRead.txt")));
+				"SplitRead_"+Organismus_Name+":"+id+".txt")));
 		
 		try {
 			BufferedReader buf = new BufferedReader(new FileReader(file));
@@ -140,6 +142,8 @@ public static HashMap einlesenSam(String file_name, String contig_id, int contig
 				
 					
 				String[] zeileArray = zeile.split("\t");
+			
+				if(!zeileArray[2].equals("*")){
 				if(zeileArray[2].equals(contig_id)){
 				if(Integer.parseInt(zeileArray[3])!=0){
 				int stop = Integer.parseInt(zeileArray[3])+zeileArray[9].length()-2;
@@ -157,7 +161,8 @@ public static HashMap einlesenSam(String file_name, String contig_id, int contig
 					zaehler++;
 				}
 				}
-				}	
+				}
+				}
 				}
 			}
 			buf.close();

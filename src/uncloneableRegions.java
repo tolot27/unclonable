@@ -20,6 +20,7 @@ import org.jdom2.output.XMLOutputter;
 
 public class uncloneableRegions {
 
+	static int cutOff; //Schwellenwert 
 	static HashMap librarySize = new HashMap();
 	static int AnzahlContigs;
 	static List <HashMap> Speicher_1_Ti = new LinkedList <HashMap>();
@@ -60,7 +61,6 @@ public class uncloneableRegions {
 		
 		for (Object key : startStop.keySet()) {
 			
-			
 			if(startStop.get(key)[0]>=0 && startStop.get(key)[1]>=0 && startStop.get(key)[0]<=contig_size && startStop.get(key)[1]<=contig_size){
 				
 			
@@ -72,7 +72,7 @@ public class uncloneableRegions {
 					
 				}
 			else {FileWriter Ausgabe_größer2Lib2 = new FileWriter(
-					  "Contig"+contig+"_!!!!Errors!!!!.txt",true);
+					  "!!!!Errors!!!!"+Organismus_name+":"+contig_ID.get(contig)+".txt",true);
 				      Ausgabe_größer2Lib2.append("invalid-position-Error: "+key+" "+startStop.get(key)[0]+" "+startStop.get(key)[1]+"\n");
 				      Ausgabe_größer2Lib2.close(); 
 				      counterError++;}
@@ -153,7 +153,7 @@ public class uncloneableRegions {
 	
 		//<<<<<<<<<<<<<<<<<<<<<<<<
 		FileWriter Ausgabe_größer2Lib = new FileWriter(
-				  "Contig"+contig+"_!!!!Errors!!!!.txt",true);
+				"!!!!Errors!!!!"+Organismus_name+":"+contig_ID.get(contig)+".txt",true);
 	   	
 	   
 			
@@ -194,6 +194,8 @@ public class uncloneableRegions {
 				
 				String[] TI1= tis[0].split("\\$");
 				String[] TI2 = tis[1].split("\\$");
+				
+				
 				
 				if( Integer.parseInt(TI1[2])>=0 && Integer.parseInt(TI1[3])>=0 && Integer.parseInt(TI2[2])>=0 && Integer.parseInt(TI2[3])>=0 
 						&& Integer.parseInt(TI1[2])<=contig_size && Integer.parseInt(TI1[3])<=contig_size && Integer.parseInt(TI2[2])<=contig_size && Integer.parseInt(TI2[3])<=contig_size){
@@ -728,7 +730,8 @@ public class uncloneableRegions {
 			for (Element tra : trace) {
 
 				if (tra.getChild("tiling").getAttributeValue("direction")
-						.equals("FORWARD")) {
+						.equals("FORWARD") || tra.getChild("tiling").getAttributeValue("direction")
+						.equals("F")) {
 
 					Ti_FR_StartStop
 							.put(tra.getChildText("ti"),
@@ -881,7 +884,7 @@ public class uncloneableRegions {
 			
 			Element seq = wurzel.getChild("INSDSeq");
 			
-            contig_laenge = Integer.parseInt(seq.getChildText("INSDSeq_length"))-1;
+            contig_laenge = Integer.parseInt(seq.getChildText("INSDSeq_length"));
 			
 			Element feature = seq.getChild("INSDSeq_feature-table");
 			
@@ -1236,8 +1239,8 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 			
 					BufferedWriter Ausgabe_uncloneableCDSInfo = new BufferedWriter(new FileWriter(new File(
-							  "_"+"contig"+contig+"_uncloneableCompCovCDSInfo.txt")));
-				   	
+							  "uncloneableProteinsInfo_"+Organismus_name+":"+contig_ID.get(Integer.parseInt(contig))+".txt")));
+				   
 				   	Ausgabe_uncloneableCDSInfo.write("Nr" + "\t"+"Gene/CDS"+"\t"+"Start"+"\t"+"Stop"+"\t"+"locus_tag"+"\t"+"GeneID"+"\t"+"GI"+"\t"+"product"+"\t"+"NCBI_Link"+"\t"+"Sequence"+"\n");
 					int count2=0;	
 				   	for (int k = 0; k < CDS.size(); k++) {
@@ -1320,12 +1323,13 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 
 		
 		BufferedWriter Ausgabe_Prot = new BufferedWriter(new FileWriter(new File(
-				  "_"+"contig"+contig+"_uncloneableProt.txt")));
+				  ""+contig+"_uncloneableProt_"+Organismus_name+":"+contig_ID.get(Integer.parseInt(contig))+".txt")));
+		int pos =0;
 			for (int k = 0; k <= contig_laenge; k++) {
 					
-				
+				pos = k+1;
 			
-						Ausgabe_Prot.write(cds[k] + "\t"+k+ "\t"+ cdsSpec[k]+"\t"+ infoStart[k]+"\n");
+						Ausgabe_Prot.write(cds[k] + "\t"+pos+ "\t"+ cdsSpec[k]+"\t"+ infoStart[k]+"\n");
 							
 							   					}
 				Ausgabe_Prot.close();
@@ -1348,7 +1352,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			
 			//gibt die GesamtCoverage aus
 			BufferedWriter Ausgabe_gesamtCoverage = new BufferedWriter(new FileWriter(new File(
-					  Organismus_name+"_"+contig+"_gesamtCoverage.txt")));
+					""+contig+"_TemplateCoverage_"+Organismus_name+":"+contig_ID.get(contig)+".wig")));
 			Ausgabe_gesamtCoverage.write("variableStep chrom="+ contig_ID.get(contig)+"\n");
 				for (int k = 0; k < compCov.length; k++) {
 						
@@ -1364,7 +1368,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			for(int i = 0; i < compCov.length;i++){
 				
 				
-				if(compCov[i] < 10){
+				if(compCov[i] < cutOff){
 					
 					int prothit=0;
 					for (int k = 0; k < CDS.size(); k++){
@@ -1594,7 +1598,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   int zaehler=0;
 			   for(int j=1; j<=AnzahlContigs; j++){
 				   
-				   Ausgabe_Statistik.write("Contig "+j+": \n");
+				   Ausgabe_Statistik.write(contig_ID.get(j)+": \n");
 			   for(int i=zaehler; i<=zaehler+1; i++){
 				   
 				   Ausgabe_Statistik.write("Library"+libs[i%2]+": "+meanInsertSize.get(i)+" \n");
@@ -1622,11 +1626,11 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   }
 			   
 			   
-			   Ausgabe_Statistik.write("\n\nMapping: \n");
+			   Ausgabe_Statistik.write("\n\nFür uncloneableRegions verwendetes Mapping (nur mate-Reads .sam wird betrachtet): \n\n");
 			   int gesamt=0;
 			   int gesamtGemappt=0;
 			   for(int i=1; i<=info_mapped.size(); i++){
-					  Ausgabe_Statistik.write("Contig"+i+": \n");
+					  Ausgabe_Statistik.write(contig_ID.get(i)+": \n");
 					  Ausgabe_Statistik.write("Anzahl der gemappten Reads: "+info_mapped.get(i-1)[0]+"\n");
 					  gesamt += info_mapped.get(i-1)[0];
 					  gesamtGemappt += info_mapped.get(i-1)[0];
@@ -1639,10 +1643,10 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   
 			   
 			   
-			   Ausgabe_Statistik.write("\n\nAnzahl der gemappten einzel-Reads: "+AnzahlEinzelReads+"\n");
-			   Ausgabe_Statistik.write("Anzahl der gemappten valid-Templates: "+AnzahlValidTemplates+"\n");
-			   Ausgabe_Statistik.write("Anzahl der gemappten fehlerhaften mate-Templates: "+counterError+"\n");
-			   Ausgabe_Statistik.write("Anzahl der gemappten pseudo Reads durch Split: "+splitReads+"\n");
+			   Ausgabe_Statistik.write("\n\nAnzahl der mate-Reads die auf unterschiedliche Contigs gemappt wurden: "+AnzahlEinzelReads+"\n");
+			   Ausgabe_Statistik.write("Anzahl der nach dem Mapping als valide befundenen Templates: "+AnzahlValidTemplates+"\n");
+			   Ausgabe_Statistik.write("Anzahl der nach dem Mapping als fehlerhaft befundenen Templates (zu sehen in Errors): "+counterError+"\n");
+			   Ausgabe_Statistik.write("Anzahl der pseudo Reads die durch Split beim Mapping entstanden sind: "+splitReads+"\n");
 			   
 			 
 			   
@@ -1650,9 +1654,13 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   Ausgabe_Statistik.write("\n\nMean Template Coverage: \n");
 			  for(int i=1; i<=meanCov.length; i++){
 				  
-				  Ausgabe_Statistik.write("Contig"+i+": "+meanCov[i-1]+"\n");
+				  Ausgabe_Statistik.write(contig_ID.get(i)+": "+meanCov[i-1]+"\n");
 				  
 			  }
+			  
+			  
+			  Ausgabe_Statistik.write("\n\nGesetzter Schwellenwert für Berechnung: Template-Coverage < "+cutOff);
+			  
 			   
 			   Ausgabe_Statistik.write("\n\n\nEinzel-Reads:"+"\n\n");
 
@@ -1704,7 +1712,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		public static void ausgebenRingschluss(int contig) throws IOException{
 			
 			   BufferedWriter AusgebenRingschluss = new BufferedWriter(new FileWriter(new File(
-						"Ringschluss"+contig+".txt")));
+						"Ringschluss_"+Organismus_name+":"+contig_ID.get(contig)+".txt")));
 				  
 		   		 for(Object key :Ringschluss.keySet()){
 		
@@ -1716,18 +1724,22 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			
 		
 		
-		public static void ausgeben(String name, String contig, int[] ausgabeMinRegions) throws IOException{
+		public static void ausgeben(String name, int contig, int[] ausgabeMinRegions) throws IOException{
 			
 			BufferedWriter Ausgabe = new BufferedWriter(new FileWriter(new File(
-					  "_"+"contig"+contig+"_"+name+".txt")));
+					  ""+contig+"_"+name+"_"+Organismus_name+":"+contig_ID.get(contig)+".wig")));
+			Ausgabe.write("variableStep chrom="+ contig_ID.get(contig)+"\n");
+
 				for (int k = 0; k <= contig_laenge; k++) {
 						
 					
 				
-							Ausgabe.write(ausgabeMinRegions[k] + "\t"+k+ "\n");
+							Ausgabe.write(k+1 + "\t"+ausgabeMinRegions[k]+ "\n");
 								
 								   					}
 					Ausgabe.close();
+				
+					
 			
 		}
 		
@@ -1750,7 +1762,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		public static void ausgebenAlleProteine(int contig) throws IOException{
 			
 			BufferedWriter AusgabeAlleProt = new BufferedWriter(new FileWriter(new File(
-					  contig+"AlleProt.txt")));
+					"AlleProtInfo_"+Organismus_name+":"+ contig_ID.get(contig)+".txt")));
 			
 			
 				for (String[] e : CDS) {
@@ -1771,6 +1783,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 	// die INSD-Datei muss als "INSD_contig1.xml vorliegen (wobei die 1 das entsprechende Contig ist)
 		
 		//für mapping-Variante noch 3. Uebergabeparameter (SAM-File)
+		// 4.Parameter für cutOff
 	public static void main(String[] args) throws JDOMException, IOException {
 
 
@@ -1778,6 +1791,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		long start_time = System.currentTimeMillis();
 		//Args[0]=ASSEMBLY.xml , Args[1]=TraceInfo.xml/ .xml
+		cutOff = Integer.parseInt(args[3]);
 		TraceInfo traceInfo = new TraceInfo();
 		traceInfo.auslesenAnzahl(args[1],args[0]);
 		librarySize = traceInfo.getLibrarySize();
@@ -1839,25 +1853,27 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			
 
 			lesenVonINSD("data/INSD_contig"+i+".xml");
-			ausgebenAlleProteine(i);
+			
 			
 			
 			compCov= new int[contig_laenge+1];
 			globalStartStop = new HashMap<String,int[]>();
 			Ringschluss = new HashMap<String,int[]>();
 			
-			BufferedWriter Ausgabe_größer2Lib = new BufferedWriter(new FileWriter(new File(
-					  "Contig"+i+"_!!!!Errors!!!!.txt")));
-			Ausgabe_größer2Lib.close();
+		
 			
 			HashMap TiFRStartStop = new HashMap();
-			TiFRStartStop = lesSam.einlesenSam(args[2], info_sam.get(i-1)[0], i);
+			TiFRStartStop = lesSam.einlesenSam(args[2], info_sam.get(i-1)[0], i, Organismus_name);
 			info_mapped.add(lesSam.nichtGemappt(args[2], info_sam.get(i-1)[0], i));
-			laengeSequenz = Integer.parseInt(info_sam.get(i-1)[1])-1;
+			laengeSequenz = Integer.parseInt(info_sam.get(i-1)[1]);
 			
-			String[] ID = info_sam.get(i-1)[0].split("\\|");
 			
-			contig_ID.put(i, ID[3].split("\\.")[0]);
+			
+			contig_ID.put(i, info_sam.get(i-1)[0]);
+			ausgebenAlleProteine(i);
+			BufferedWriter Ausgabe_größer2Lib = new BufferedWriter(new FileWriter(new File(
+					"!!!!Errors!!!!"+Organismus_name+":"+contig_ID.get(i)+".txt")));
+			Ausgabe_größer2Lib.close();
 			
 			
 			// put mapped ti in hash
@@ -2000,9 +2016,9 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				ausgebenRingschluss(i);
 				
 				ausgebenUncloneableCompCov(Integer.toString(i),ausgabeMinCov);
-				ausgeben("MinRegions",Integer.toString(i),ausgabeMinRegions);
-				ausgeben("DecreasedProt",Integer.toString(i), ausgabeDecreasedCoverageProt );
-				ausgeben("DecreasedRegions", Integer.toString(i), ausgabeDecreasedCoverageRegions);
+				ausgeben("UncloneableRegions",i,ausgabeMinRegions);
+				ausgeben("DecreasedProt",i, ausgabeDecreasedCoverageProt );
+				ausgeben("DecreasedRegions", i, ausgabeDecreasedCoverageRegions);
 				
 				meanCov[i-1]=meanCoverage();
 				
