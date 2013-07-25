@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 
 public class lesenSam {
@@ -84,7 +85,7 @@ public class lesenSam {
 				
 					
 				String[] zeileArray = zeile.split("\t");
-				if(Integer.parseInt(zeileArray[3])==0){
+				if(Pattern.matches(".*MP:i:0.*", zeile)){
 					unmapped++;
 					
 					
@@ -143,13 +144,17 @@ public static HashMap einlesenSam(String file_name, String contig_id, int contig
 					
 				String[] zeileArray = zeile.split("\t");
 			
-				if(!zeileArray[2].equals("*")){
+				if(zeileArray[0].equals("515168849")){
+					System.out.println();
+				}
+				
+				if(Pattern.matches(".*MP:i:1.*", zeile)){
 				if(zeileArray[2].equals(contig_id)){
 				if(Integer.parseInt(zeileArray[3])!=0){
 				int stop = Integer.parseInt(zeileArray[3])+zeileArray[9].length()-2;
 				
 				if(!map.containsKey(zeileArray[0])){
-				if(Integer.parseInt(zeileArray[8])>0){
+				if(Pattern.matches(".*RO:i:\\+.*",zeile)){
 				map.put(zeileArray[0], "F$"+(Integer.parseInt(zeileArray[3])-1)+"$"+ stop);	
 					
 				}

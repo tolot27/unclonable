@@ -328,6 +328,7 @@ public class FastQual {
 						  "single"+key+".qual")));
 				
 				
+				
 				for(String ti: single.get(key)){
 						
 								Single_Fasta.write(">"+ti+"\n"+fasta.get(ti));
@@ -336,6 +337,7 @@ public class FastQual {
 				}
 				Single_Fasta.close();
 				Single_Qual.close();
+				
 			}
 			
 			
@@ -346,16 +348,19 @@ public class FastQual {
 						  "mate_f"+key+".fasta")));
 				BufferedWriter Mate_f_Qual = new BufferedWriter(new FileWriter(new File(
 						  "mate_f"+key+".qual")));
+			
 				
-				
+			
 				for(String ti: mate_f.get(key)){
+					
 						
 								Mate_f_Fasta.write(">"+ti+"\n"+fasta.get(ti));
 								Mate_f_Qual.write(">"+ti+"\n"+qual.get(ti));
-					
+							
 				}
 				Mate_f_Fasta.close();
 				Mate_f_Qual.close();
+				
 			}
 			
 			for(String key : mate_r.keySet()){

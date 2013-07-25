@@ -1646,7 +1646,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   Ausgabe_Statistik.write("\n\nAnzahl der mate-Reads die auf unterschiedliche Contigs gemappt wurden: "+AnzahlEinzelReads+"\n");
 			   Ausgabe_Statistik.write("Anzahl der nach dem Mapping als valide befundenen Templates: "+AnzahlValidTemplates+"\n");
 			   Ausgabe_Statistik.write("Anzahl der nach dem Mapping als fehlerhaft befundenen Templates (zu sehen in Errors): "+counterError+"\n");
-			   Ausgabe_Statistik.write("Anzahl der pseudo Reads die durch Split beim Mapping entstanden sind: "+splitReads+"\n");
+			   Ausgabe_Statistik.write("Anzahl der pseudo Reads die durch Split beim Mapping entstanden sind (Aufgelistet in den SplitRead-Dateien): "+splitReads+"\n");
 			   
 			 
 			   
@@ -1662,7 +1662,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			  Ausgabe_Statistik.write("\n\nGesetzter Schwellenwert für Berechnung: Template-Coverage < "+cutOff);
 			  
 			   
-			   Ausgabe_Statistik.write("\n\n\nEinzel-Reads:"+"\n\n");
+			   Ausgabe_Statistik.write("\n\n\nReads deren Partner auf anderem Contig gemappt wurde:"+"\n\n");
 
 			   //Einzel Reads werden Rausgeschrieben
 			   		for(int i=0; i<Speicher_1_Ti.size();i++){
@@ -1674,18 +1674,18 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   		}
 			   	
 			   		
-			  	Ausgabe_Statistik.write("\n\n\nMehrfach-Templates:"+"\n\n");
-			   	//Mehrfach Reads werden Rausgeschrieben
-			   		for(int i=0; i<Speicher_mehrere_Ti.size();i++){
-			   		 for(Object key : Speicher_mehrere_Ti.get(i).keySet()){
-			   			Ausgabe_Statistik.write(key.toString()+":\n");
-			   			String Eintrag=Speicher_mehrere_Ti.get(i).get(key).toString();
-			   			String[]EinzelArray=Eintrag.split("!");
-			   			for(int j=0;j<EinzelArray.length;j++){
-			   			String[]Array=EinzelArray[j].toString().split("\\$");
-			   			Ausgabe_Statistik.write(Array[0]+"\t"+Array[1]+"\t"+Array[2]+"\t"+Array[3]+"\n");
-			   			}}
-			   		}
+//			  	Ausgabe_Statistik.write("\n\n\nMehrfach-Templates:"+"\n\n");
+//			   	//Mehrfach Reads werden Rausgeschrieben
+//			   		for(int i=0; i<Speicher_mehrere_Ti.size();i++){
+//			   		 for(Object key : Speicher_mehrere_Ti.get(i).keySet()){
+//			   			Ausgabe_Statistik.write(key.toString()+":\n");
+//			   			String Eintrag=Speicher_mehrere_Ti.get(i).get(key).toString();
+//			   			String[]EinzelArray=Eintrag.split("!");
+//			   			for(int j=0;j<EinzelArray.length;j++){
+//			   			String[]Array=EinzelArray[j].toString().split("\\$");
+//			   			Ausgabe_Statistik.write(Array[0]+"\t"+Array[1]+"\t"+Array[2]+"\t"+Array[3]+"\n");
+//			   			}}
+//			   		}
 			
 			   		Ausgabe_Statistik.write("\n\n\nValid-Templates:"+"\n\n");
 				   	//verwendete Reads werden Rausgeschrieben
