@@ -42,6 +42,7 @@ public class uncloneableRegions {
 	static String[] string_libs;
 	static double[] meanCov;
 	static int counterError;
+	static int anzahlLibraries;
 	
 	static List<String[]> info_sam = new LinkedList<String[]>();
 	static HashMap mapped_reads = new HashMap();
@@ -339,7 +340,11 @@ public class uncloneableRegions {
 			
 			
 		}
-        int mean_insert=insert/zaehler;
+		int mean_insert =0;
+		if(zaehler==0){
+		mean_insert=0;}
+		else{
+         mean_insert=insert/zaehler;}
         meanInsertSize.add(mean_insert);
        
         
@@ -1283,7 +1288,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				
 				
 				spez = "0";
-				if(CDS.get(i)[4].equals("hypothetical protein")){
+				if(CDS.get(i)[4]!=null && CDS.get(i)[4].equals("hypothetical protein")){
 					 spez = "1";
 				}
 				
@@ -1302,7 +1307,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 				for(int j=Integer.parseInt(CDS.get(i)[1]); j<= Integer.parseInt(CDS.get(i)[2]); j++){
 					
 					spez = "0";
-					if(CDS.get(i)[4].equals("hypothetical protein")){
+					if(CDS.get(i)[4]!=null && CDS.get(i)[4].equals("hypothetical protein")){
 						 spez = "1";
 					}
 					
@@ -1546,7 +1551,7 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 						}
 						
 					}}
-					i=i+10;  		// 10er schritte um Laufzeit zu sparen
+					i=i+100;  		// 100er schritte um Laufzeit zu sparen
 				}
 				
 				
@@ -1586,8 +1591,8 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   Ausgabe_Statistik.write("Anzahl der Contigs: "+AnzahlContigs+"\n");
 			   
 			   
-			   Ausgabe_Statistik.write("Verwendete Librarys: \n");
-			   for(int g=0; g<2; g++){
+			   Ausgabe_Statistik.write("Verwendete Libraries: \n");
+			   for(int g=0; g<anzahlLibraries; g++){
 				   
 				   Ausgabe_Statistik.write("Library "+libs[g]+" mit stdv "+librarySize.get(string_libs[g])+"\n");
 				   
@@ -1599,11 +1604,11 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			   for(int j=1; j<=AnzahlContigs; j++){
 				   
 				   Ausgabe_Statistik.write(contig_ID.get(j)+": \n");
-			   for(int i=zaehler; i<=zaehler+1; i++){
+			   for(int i=zaehler; i<zaehler+anzahlLibraries; i++){
 				   
-				   Ausgabe_Statistik.write("Library"+libs[i%2]+": "+meanInsertSize.get(i)+" \n");
+				   Ausgabe_Statistik.write("Library"+libs[i%anzahlLibraries]+": "+meanInsertSize.get(i)+" \n");
 			   }
-			   zaehler+=2;
+			   zaehler+=anzahlLibraries;
 			   }
 			   
 			   int AnzahlEinzelReads=0;
@@ -1779,21 +1784,24 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 		
 	
-	//ntige Eingabeparameter: Args[0]=ASSEMBLY.xml , Args[1]=TraceInfo.xml
+	// Args[0]=TraceInfo.xml
 	// die INSD-Datei muss als "INSD_contig1.xml vorliegen (wobei die 1 das entsprechende Contig ist)
 		
-		//für mapping-Variante noch 3. Uebergabeparameter (SAM-File)
-		// 4.Parameter für cutOff
+		//für mapping-Variante noch 2. Uebergabeparameter (SAM-File)
+		// 3.Parameter für cutOff
 	public static void main(String[] args) throws JDOMException, IOException {
 
 
 		
 		
 		long start_time = System.currentTimeMillis();
-		//Args[0]=ASSEMBLY.xml , Args[1]=TraceInfo.xml/ .xml
-		cutOff = Integer.parseInt(args[3]);
+		// Args[0]=TraceInfo.xml/ .xml
+		cutOff = Integer.parseInt(args[2]);
 		TraceInfo traceInfo = new TraceInfo();
-		traceInfo.auslesenAnzahl(args[1],args[0]);
+		traceInfo.auslesenAnzahl(args[0], args[1]);
+	
+		
+		
 		librarySize = traceInfo.getLibrarySize();
 		AnzahlContigs=traceInfo.getAnzahlContigs();
 		Organismus_name=traceInfo.getOrganismus_name();
@@ -1804,44 +1812,29 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 	
 		
-		int Library1 = 0;
-		int Library2=0;
-		String string_Library1="";
-		String string_Library2="";
-		int flag=0;
+
+		
+		anzahlLibraries = librarySize.size();
+		
+		libs = new int[anzahlLibraries];
+		int zaehler =0;
 		for (Object key : librarySize.keySet()){
 			
-				if(flag==0){
-					Library1=Integer.parseInt(key.toString());
-					string_Library1=key.toString();
-				}
-				if(flag==1){
-					Library2=Integer.parseInt(key.toString());
-					string_Library2=key.toString();
-				}
-			flag++;
-			
+				libs[zaehler] = Integer.parseInt(key.toString());
+			zaehler++;
 		}
 		
-		libs = new int[2];
-		string_libs = new String[2];
-		if(Library1>Library2){
-			libs[0]=Library2;
-			libs[1]=Library1;
-			string_libs[0]=string_Library2;
-			string_libs[1]=string_Library1;
-		}
-		else{
-			libs[0]=Library1;
-			libs[1]=Library2;
-			string_libs[1]=string_Library2;
-			string_libs[0]=string_Library1;
+		java.util.Arrays.sort(libs);
+		
+		string_libs = new String[anzahlLibraries];
+		for(int i=0; i< anzahlLibraries; i++){
+			string_libs[i] = ""+libs[i];
 		}
 		
 		
 		lesenSam lesSam = new lesenSam();
 		
-		info_sam=lesSam.info_contig(args[2]);
+		info_sam=lesSam.info_contig(args[1]);
 		
 		
 		
@@ -1863,8 +1856,8 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 		
 			
 			HashMap TiFRStartStop = new HashMap();
-			TiFRStartStop = lesSam.einlesenSam(args[2], info_sam.get(i-1)[0], i, Organismus_name);
-			info_mapped.add(lesSam.nichtGemappt(args[2], info_sam.get(i-1)[0], i));
+			TiFRStartStop = lesSam.einlesenSam(args[1], info_sam.get(i-1)[0], i, Organismus_name);
+			info_mapped.add(lesSam.nichtGemappt(args[1], info_sam.get(i-1)[0], i));
 			laengeSequenz = Integer.parseInt(info_sam.get(i-1)[1]);
 			
 			
@@ -1882,13 +1875,13 @@ public static void ausgebenUncloneableCompCov(String contig, int[]PotGenPosition
 			}
 		
 			
-			for (int l=0;l<2;l++){
+			for (int l=0;l<anzahlLibraries;l++){
 				
 				
 				
 				// (1) Erzeugen von HashMap zu Contig + librarySize (z.B. template_id -> ti$ti)
 				HashMap TiTi = new HashMap();
-			TiTi= lesenVonTrace(args[1],libs[l]);
+			TiTi= lesenVonTrace(args[0],libs[l]);
 			
 			// put all ti in hash
 			/*

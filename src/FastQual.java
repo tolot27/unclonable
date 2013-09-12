@@ -153,12 +153,7 @@ public class FastQual {
 					String[]feature1=array[0].split("\\$");
 					String[]feature2=array[1].split("\\$");
 					
-					if(feature1[0].equals("515514426")){
-						System.out.println("");
-					}
-					if(feature2[0].equals("515514426")){
-						System.out.println("");
-					}
+				
 					
 					if((feature1[1].equals("FORWARD")||feature1[1].equals("F")) && (feature2[1].equals("FORWARD")||feature2[1].equals("F"))){
 						ff.add(feature1[0]);
@@ -310,12 +305,11 @@ public class FastQual {
 		einlesenFasta(fasta_name);
 		einlesenQual(qual_name);
 		
-		
+
 		for(String lib_key : librarySize.keySet() ){
 			
 			
 			
-		
 	
 			
 			
